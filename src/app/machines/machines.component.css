@@ -1,0 +1,21 @@
+.clown-main {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.clown-main-actions {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.clown-main-actions div {
+    margin: 0 auto;
+}
+
+.clown-main-actions .btn {
+    margin-left: 5px;
+}

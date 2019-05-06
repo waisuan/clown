@@ -1,1 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
+@import '~@swimlane/ngx-datatable/release/index.css';
+@import '~@swimlane/ngx-datatable/release/themes/material.css';
+@import '~@swimlane/ngx-datatable/release/assets/icons.css';
+
+@import "~ag-grid-community/dist/styles/ag-grid.css";
+@import "~ag-grid-community/dist/styles/ag-theme-balham.css";
+
+/* Use this if we want the original blue dark background on white text so it's readable */
+.ngx-datatable.material .datatable-body .datatable-body-row .datatable-body-cell { color: unset; }
+
+ .xl > .modal-dialog {
+    max-width: 90% !important;
+    width: 90% !important;
+ }

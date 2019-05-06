@@ -1,0 +1,127 @@
+<div class="clown-main">
+  <div class="clown-main-actions">
+    <div class="input-group col-4">
+        <div class="input-group-prepend">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+        </div>
+        <input #searchMachinesBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchMachines(searchMachinesBox.value)">
+        <button type="button" class="btn btn-warning"><i class="fas fa-bell"></i></button>
+        <button type="button" class="btn btn-info"><i class="fas fa-history"></i></button>
+        <button type="button" class="btn btn-success"><i class="fas fa-plus"></i></button>
+    </div>
+  </div>
+  <ag-grid-angular #agGrid 
+    class="ag-theme-balham"
+    (gridReady)="onGridReady($event)"
+    (rowDoubleClicked)="onRowDoubleClicked($event)"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [pagination]="true"
+    [suppressNoRowsOverlay]="true"
+    [suppressLoadingOverlay]="true"
+    [paginationPageSize]="paginationPageSize"
+    [cacheBlockSize]="cacheBlockSize"
+    [animateRows]="true"
+    [rowSelection]="'multiple'"
+    [rowModelType]="'infinite'"
+    >
+  </ag-grid-angular>
+</div>
+
+<ng-template #machineModal let-modal>
+  <form #machineForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="modal-body">
+      <input type="text" style="display:none" />
+      <div class="form-group">
+        <label for="serialNumber">Serial No.</label>
+        <input #serialNumber="ngModel" type="text" class="form-control" id="serialNumber" name="serialNumber" [(ngModel)]="currentMachine.serialNumber" required disabled>
+        <small [hidden]="serialNumber.valid || serialNumber.pristine" style="color: red">Please provide a serial number.</small>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="customer">Customer</label>
+          <input type="text" class="form-control" id="customer" name="customer" [(ngModel)]="currentMachine.customer">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="state">State</label>
+          <input type="text" class="form-control" id="state" name="state" [(ngModel)]="currentMachine.state">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="district">District</label>
+          <input type="text" class="form-control" id="district" name="district" [(ngModel)]="currentMachine.district">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="type">Type</label>
+          <input type="text" class="form-control" id="type" name="accountType" [(ngModel)]="currentMachine.accountType">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="model">Model</label>
+          <input type="text" class="form-control" id="model" name="model" [(ngModel)]="currentMachine.model">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="brand">Brand</label>
+          <input type="text" class="form-control" id="brand" name="brand" [(ngModel)]="currentMachine.brand">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="status">Status</label>
+          <input type="text" class="form-control" id="status" name="status" [(ngModel)]="currentMachine.status">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="tncDate">TNC Date</label>
+          <div class="input-group">
+            <input class="form-control" placeholder="dd/mm/yyyy" name="tncDate" [(ngModel)]="currentMachine.tncDate" ngbDatepicker #tncDate="ngbDatepicker">
+            <div class="input-group-prepend">
+              <button class="btn btn-outline-secondary" (click)="tncDate.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+            </div>
+          </div>  
+        </div>
+        <div class="form-group col-md-4">
+          <label for="ppmDate">PPM Date</label>
+          <div class="input-group">
+            <input class="form-control" placeholder="dd/mm/yyyy" name="ppmDate" [(ngModel)]="currentMachine.ppmDate" ngbDatepicker #ppmDate="ngbDatepicker">
+            <div class="input-group-prepend">
+              <button class="btn btn-outline-secondary" (click)="ppmDate.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="reportedBy">Reported By</label>
+          <input type="text" class="form-control" id="reportedBy" name="reportedBy" [(ngModel)]="currentMachine.reportedBy">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="assignee">Assignee</label>
+          <input type="text" class="form-control" id="assignee" name="personInCharge" [(ngModel)]="currentMachine.personInCharge">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="additionalNotes">Additional Notes</label>
+        <textarea class="form-control" id="additionalNotes" rows="4"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="mr-auto">
+        <div class="row" class="ml-auto">
+          <small>Created on: {{currentMachine.dateOfCreation}}</small>
+        </div>
+        <div class="row" class="ml-auto">
+          <small style="color: blue">Updated on: {{currentMachine.lastUpdated}}</small>
+        </div>    
+      </div>
+      <button type="button" class="btn btn-danger" disabled><i class="fas fa-trash-alt"></i> Delete</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!machineForm.form.valid || isLoading">
+        <span *ngIf="!isLoading"><i class="fas fa-save"></i> Save</span>
+        <span *ngIf="isLoading"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...</span>
+      </button>
+      <!--(click)="modal.close('Save click')"-->
+    </div>
+  </form>
+</ng-template>
+
+<ngx-spinner [fullScreen]="true" type="ball-spin-fade"></ngx-spinner>
