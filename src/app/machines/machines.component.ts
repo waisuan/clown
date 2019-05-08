@@ -8,7 +8,7 @@ import { NgbModal, ModalDismissReasons, NgbDateParserFormatter, NgbModalRef } fr
 import { NgxSpinnerService } from 'ngx-spinner';
 import * as FileSaver from 'file-saver';
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter';
-import { padNumber } from '../util/Elves';
+import { padNumber, sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
 
 @Component({
   selector: 'app-machines',
@@ -77,7 +77,7 @@ export class MachinesComponent implements OnInit {
         if (!response.trim()) {
           this.isFilterOn = false;
         } else {
-          this.searchTerm = this.sanitizeSearchTerm(response);
+          this.searchTerm = sanitizeSearchTerm(response);
           console.log(this.searchTerm);
           this.isFilterOn = true;
         }
@@ -107,18 +107,17 @@ export class MachinesComponent implements OnInit {
 
   onRowDoubleClicked(params) {
     console.log(params);
-    this.currentMachine = this.sanitizeFormDataForRead(params['data']);
-    this.getAttachment('5cccfa90412c1719b05ef695');
-    // this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl" });
-    // this.modalReference.result.then((result) => {
-    //   //todo don't refresh sorting ???
-    //   this.forceRefresh = true;
-    //   this.gridApi.setSortModel(null);
-    // }, (reason) => { });
+    this.currentMachine = sanitizeFormDataForRead(params['data']);
+    this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl" });
+    this.modalReference.result.then((result) => {
+      //todo don't refresh sorting ???
+      this.forceRefresh = true;
+      this.gridApi.setSortModel(null);
+    }, (reason) => { });
   }
 
   onSubmit() {
-    this.updateMachine(this.currentMachine['serialNumber'], this.sanitizeFormDataForWrite(this.currentMachine));
+    this.updateMachine(this.currentMachine['serialNumber'], sanitizeFormDataForWrite(this.currentMachine));
   }
 
   refreshSortModel(sortModel) {
@@ -149,38 +148,6 @@ export class MachinesComponent implements OnInit {
     }
   }
 
-  //////////////////////////////////////////////////////////
-
-  sanitizeSearchTerm(response: string) {
-    return response.replace(/\//g, '-');
-  }
-
-  sanitizeFormDataForRead(data: {}) {
-    var sanitizedData = JSON.parse(JSON.stringify(data));
-    if (sanitizedData['tncDate']) {
-      var tokens = sanitizedData['tncDate'].split('/');
-      sanitizedData['tncDate'] = { year: parseInt(tokens[2]), month: parseInt(tokens[1]), day: parseInt(tokens[0]) };
-    }
-    if (sanitizedData['ppmDate']) {
-      var tokens = sanitizedData['ppmDate'].split('/');
-      sanitizedData['ppmDate'] = { year: parseInt(tokens[2]), month: parseInt(tokens[1]), day: parseInt(tokens[0]) };
-    }
-    return sanitizedData;
-  }
-
-  sanitizeFormDataForWrite(data: {}) {
-    var sanitizedData = JSON.parse(JSON.stringify(data));
-    if (sanitizedData['tncDate']) {
-      sanitizedData['tncDate'] = padNumber(sanitizedData['tncDate']['day']) + '/' + padNumber(sanitizedData['tncDate']['month']) + '/' + sanitizedData['tncDate']['year'];
-    }
-    if (sanitizedData['ppmDate']) {
-      sanitizedData['ppmDate'] = padNumber(sanitizedData['ppmDate']['day']) + '/' + padNumber(sanitizedData['ppmDate']['month']) + '/' + sanitizedData['ppmDate']['year'];
-    }
-    return sanitizedData;
-  }
-
-  //////////////////////////////////////////////////////////
-
   getMachines(params: IGetRowsParams) {
     console.log('getMachines');
     this.clownService.getMachines(this.cacheBlockSize, this.numOfMachinesFetchedSoFar, this.sortBy, this.sortOrder).subscribe(response => {
@@ -208,11 +175,6 @@ export class MachinesComponent implements OnInit {
   getAttachment(id: string) {
     this.clownService.getAttachment(id).subscribe(response => {
       FileSaver.saveAs(response['blob'], response['fileName']);
-      // const url = window.URL.createObjectURL(response['blob']);
-      // const status = window.open(url);
-      // if (!status || status.closed || typeof status.closed == 'undefined') {
-      //   //todo
-      // }
     });
   }
 
