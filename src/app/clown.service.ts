@@ -6,6 +6,9 @@ import { Observable, of } from 'rxjs';
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
 };
+const httpFormOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'multipart/form-data' })
+};
 const httpFileOptions = {
   responseType: 'blob' as 'blob',
   observe: 'response' as 'response'
@@ -78,6 +81,16 @@ export class ClownService {
     return this.http.put(`${url}/${api}/machine/${id}`, machine, httpOptions).pipe(
       tap(_ => this.log(`updated machine=${id}`)),
       catchError(this.handleError('updateMachine()'))
+    );
+  }
+
+  insertAttachment(id: string, file: FormData) {
+    if (!file) {
+      return of(null);
+    }
+    return this.http.put(`${url}/${api}/attachment/${id}`, file).pipe(
+      tap(_ => this.log(`updated attachment=${id}`)),
+      catchError(this.handleError('insertAttachment()'))
     );
   }
 

@@ -60,6 +60,7 @@ export class MachinesComponent implements OnInit {
   @ViewChild('agGrid') agGrid: AgGridNg2;
   @ViewChild('machineModal') private machineModal;
   @Input() currentMachine;
+  @Input() attachment = {};
 
   constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
@@ -113,11 +114,17 @@ export class MachinesComponent implements OnInit {
       //todo don't refresh sorting ???
       this.forceRefresh = true;
       this.gridApi.setSortModel(null);
-    }, (reason) => { });
+    }, (reason) => {
+      this.attachment = {};
+    });
   }
 
   onSubmit() {
-    this.updateMachine(this.currentMachine['serialNumber'], sanitizeFormDataForWrite(this.currentMachine));
+    this.updateMachine(this.currentMachine['serialNumber'], sanitizeFormDataForWrite(this.currentMachine), this.attachment);
+  }
+
+  downloadFile() {
+    this.getAttachment(this.currentMachine['attachment']);
   }
 
   refreshSortModel(sortModel) {
@@ -145,6 +152,18 @@ export class MachinesComponent implements OnInit {
         this.sortOrder = null;
         this.numOfMachinesFetchedSoFar = 0;
       }
+    }
+  }
+
+  uploadFile(event) {
+    var fileList: FileList = event.target.files;
+    console.log(fileList);
+    if (fileList.length > 0) {
+      var file:File = fileList[0];
+      var formData:FormData = new FormData();
+      formData.append('attachment', file, file.name);
+      this.attachment['filename'] = file.name;
+      this.attachment['file'] = formData;
     }
   }
 
@@ -182,14 +201,22 @@ export class MachinesComponent implements OnInit {
     this.searchTerms.next(term);
   }
 
-  updateMachine(id: string, machine: {}) {
+  updateMachine(id: string, machine: {}, attachment: {}) {
     this.isLoading = true;
-    this.clownService.updateMachine(id, machine).subscribe(() => {
-      //todo handle err
-      setTimeout(() => {
-        this.isLoading = false;
-        this.modalReference.close(); 
-      }, 1000); // 1s delay
+    this.clownService.insertAttachment(id, attachment['file']).subscribe((attachmentId) => {
+      if (attachmentId) {
+        console.log(attachmentId['id']);
+        machine['attachment'] = attachmentId['id'];
+        machine['attachment_name'] = attachment['filename'];
+      }
+      this.clownService.updateMachine(id, machine).subscribe(() => {
+        //todo handle err
+        setTimeout(() => {
+          this.isLoading = false;
+          this.modalReference.close();
+          this.attachment = {}; 
+        }, 1000); // 1s delay
+      });
     });
   }
 }
