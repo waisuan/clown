@@ -123,8 +123,25 @@ export class MachinesComponent implements OnInit {
     this.updateMachine(this.currentMachine['serialNumber'], sanitizeFormDataForWrite(this.currentMachine), this.attachment);
   }
 
+  onDelete() {
+    console.log("delete");
+  }
+
   downloadFile() {
     this.getAttachment(this.currentMachine['attachment']);
+  }
+
+  uploadFile(event) {
+    var fileList: FileList = event.target.files;
+    if (fileList.length > 0) {
+      var file:File = fileList[0];
+      var formData:FormData = new FormData();
+      formData.append('attachment', file, file.name);
+      this.attachment['filename'] = file.name;
+      this.attachment['file'] = formData;
+    } else {
+      this.attachment = {}
+    }
   }
 
   refreshSortModel(sortModel) {
@@ -152,18 +169,6 @@ export class MachinesComponent implements OnInit {
         this.sortOrder = null;
         this.numOfMachinesFetchedSoFar = 0;
       }
-    }
-  }
-
-  uploadFile(event) {
-    var fileList: FileList = event.target.files;
-    console.log(fileList);
-    if (fileList.length > 0) {
-      var file:File = fileList[0];
-      var formData:FormData = new FormData();
-      formData.append('attachment', file, file.name);
-      this.attachment['filename'] = file.name;
-      this.attachment['file'] = formData;
     }
   }
 
@@ -215,7 +220,7 @@ export class MachinesComponent implements OnInit {
           this.isLoading = false;
           this.modalReference.close();
           this.attachment = {}; 
-        }, 1000); // 1s delay
+        }, 5000); // 1s delay
       });
     });
   }

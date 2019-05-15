@@ -106,16 +106,13 @@
         <textarea class="form-control" id="additionalNotes" rows="4"></textarea>
       </div>
       <div class="form-group">
-        <!-- <div class="input-group col-md-4">
-          <div class="input-group-prepend">
-            <span class="input-group-text"><i class="fas fa-file-upload"></i></span>
-          </div>
-          <div class="custom-file">
-            <input type="file" class="custom-file-input" id="fileUploader" (change)="uploadFile($event)">
-            <label class="custom-file-label" for="fileUploader">{{attachment.filename || "Choose file"}}</label>
-          </div>
-        </div> -->
-        <button type="button" class="btn btn-outline-secondary" *ngIf="currentMachine.attachment_name" (click)="downloadFile()"><i class="fas fa-file-download"></i> {{currentMachine.attachment_name}}</button>
+        <input hidden type="file" #uploader (change)="uploadFile($event)"/>
+        <button type="button" class="btn btn-outline-secondary mr-1" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
+          <i class="fas fa-file-upload"></i> {{attachment.filename || "Upload a file..."}}
+        </button>
+        <button type="button" class="btn btn-outline-secondary ml-1" *ngIf="currentMachine.attachment_name" (click)="downloadFile()" placement="bottom" ngbTooltip="Download file">
+          <i class="fas fa-file-download"></i> {{currentMachine.attachment_name}}
+        </button>
       </div>
     </div>
     <div class="modal-footer">
@@ -127,12 +124,11 @@
           <small style="color: blue">Updated on: {{currentMachine.lastUpdated}}</small>
         </div>    
       </div>
-      <button type="button" class="btn btn-danger" disabled><i class="fas fa-trash-alt"></i> Delete</button>
+      <button type="button" class="btn btn-danger" (click)="onDelete()"><i class="fas fa-trash-alt"></i> Delete</button>
       <button type="submit" class="btn btn-primary" [disabled]="!machineForm.form.valid || isLoading">
         <span *ngIf="!isLoading"><i class="fas fa-save"></i> Save</span>
-        <span *ngIf="isLoading"><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...</span>
+        <span *ngIf="isLoading"><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Saving...</span>
       </button>
-      <!--(click)="modal.close('Save click')"-->
     </div>
   </form>
 </ng-template>
