@@ -8,7 +8,7 @@ import { NgbModal, ModalDismissReasons, NgbDateParserFormatter, NgbModalRef } fr
 import { NgxSpinnerService } from 'ngx-spinner';
 import * as FileSaver from 'file-saver';
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter';
-import { padNumber, sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
+import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
 
 @Component({
   selector: 'app-machines',
@@ -50,12 +50,15 @@ export class MachinesComponent implements OnInit {
   private sortBy = null;
   private sortOrder = null;
   private isFilterOn = false;
-  private forceRefresh = false;
+  private fullRefresh = false;
+  private miniRefresh = false;
   private searchTerms = new Subject<string>();
   private dataSource: IDatasource;
   private searchTerm = '';
   private modalReference: NgbModalRef;
-  private isLoading = false;
+  private isSaving = false;
+  private isDeleting = false;
+  private hasError = false;
 
   @ViewChild('agGrid') agGrid: AgGridNg2;
   @ViewChild('machineModal') private machineModal;
@@ -74,7 +77,7 @@ export class MachinesComponent implements OnInit {
       switchMap((term: string) => of(term))).
       subscribe(response => {
         console.log(response);
-        this.forceRefresh = true;
+        this.fullRefresh = true;
         if (!response.trim()) {
           this.isFilterOn = false;
         } else {
@@ -109,13 +112,12 @@ export class MachinesComponent implements OnInit {
   onRowDoubleClicked(params) {
     console.log(params);
     this.currentMachine = sanitizeFormDataForRead(params['data']);
-    this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl" });
+    this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting });
     this.modalReference.result.then((result) => {
-      //todo don't refresh sorting ???
-      this.forceRefresh = true;
-      this.gridApi.setSortModel(null);
+      this.miniRefresh = true;
+      this.gridApi.setSortModel(this.gridApi.getSortModel());
     }, (reason) => {
-      this.attachment = {};
+      this.clearModalState();
     });
   }
 
@@ -124,11 +126,16 @@ export class MachinesComponent implements OnInit {
   }
 
   onDelete() {
-    console.log("delete");
+    this.deleteMachine(this.currentMachine['serialNumber']);
   }
 
   downloadFile() {
     this.getAttachment(this.currentMachine['attachment']);
+  }
+
+  removeFile() {
+    this.currentMachine['attachment'] = "";
+    this.currentMachine['attachment_name'] = "";
   }
 
   uploadFile(event) {
@@ -145,11 +152,15 @@ export class MachinesComponent implements OnInit {
   }
 
   refreshSortModel(sortModel) {
-    if (this.forceRefresh) {
+    if (this.fullRefresh) {
       this.sortBy = null;
       this.sortOrder = null;
       this.numOfMachinesFetchedSoFar = 0;
-      this.forceRefresh = false;
+      this.fullRefresh = false;
+      return;
+    } else if (this.miniRefresh) {
+      this.numOfMachinesFetchedSoFar = 0;
+      this.miniRefresh = false;
       return;
     }
     
@@ -170,6 +181,13 @@ export class MachinesComponent implements OnInit {
         this.numOfMachinesFetchedSoFar = 0;
       }
     }
+  }
+
+  clearModalState() {
+    this.hasError = false;
+    this.isDeleting = false;
+    this.isSaving = false;
+    this.attachment = {}
   }
 
   getMachines(params: IGetRowsParams) {
@@ -207,7 +225,8 @@ export class MachinesComponent implements OnInit {
   }
 
   updateMachine(id: string, machine: {}, attachment: {}) {
-    this.isLoading = true;
+    this.isSaving = true;
+    this.hasError = false;
     this.clownService.insertAttachment(id, attachment['file']).subscribe((attachmentId) => {
       if (attachmentId) {
         console.log(attachmentId['id']);
@@ -215,13 +234,33 @@ export class MachinesComponent implements OnInit {
         machine['attachment_name'] = attachment['filename'];
       }
       this.clownService.updateMachine(id, machine).subscribe(() => {
-        //todo handle err
         setTimeout(() => {
-          this.isLoading = false;
+          this.isSaving = false;
           this.modalReference.close();
           this.attachment = {}; 
-        }, 5000); // 1s delay
+        }, 3000); // Xs delay
+      }, (err: Error) => {
+        this.isSaving = false;
+        this.hasError = true;
       });
+    }, (err: Error) => {
+      this.isSaving = false;
+      this.hasError = true;
+    });
+  }
+
+  deleteMachine(id: string) {
+    this.isDeleting = true;
+    this.hasError = false;
+    this.clownService.deleteMachine(id).subscribe(() => {
+      setTimeout(() => {
+        this.isDeleting = false;
+        this.modalReference.close();
+        this.attachment = {}; 
+      }, 3000); // Xs delay
+    }, (err: Error) => {
+      this.isDeleting = false;
+      this.hasError = true;
     });
   }
 }

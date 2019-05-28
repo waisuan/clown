@@ -103,16 +103,26 @@
       </div>
       <div class="form-group">
         <label for="additionalNotes">Additional Notes</label>
-        <textarea class="form-control" id="additionalNotes" rows="4"></textarea>
+        <textarea class="form-control" id="additionalNotes" name="additionalNotes" rows="4" [(ngModel)]="currentMachine.additionalNotes"></textarea>
       </div>
       <div class="form-group">
         <input hidden type="file" #uploader (change)="uploadFile($event)"/>
-        <button type="button" class="btn btn-outline-secondary mr-1" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
+        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentMachine.attachment_name" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
           <i class="fas fa-file-upload"></i> {{attachment.filename || "Upload a file..."}}
         </button>
-        <button type="button" class="btn btn-outline-secondary ml-1" *ngIf="currentMachine.attachment_name" (click)="downloadFile()" placement="bottom" ngbTooltip="Download file">
+        <!-- <button type="button" class="btn btn-outline-secondary ml-1" *ngIf="currentMachine.attachment_name" (click)="downloadFile()" placement="bottom" ngbTooltip="Download file">
           <i class="fas fa-file-download"></i> {{currentMachine.attachment_name}}
-        </button>
+        </button> -->
+        <div ngbDropdown class="d-inline-block" *ngIf="currentMachine.attachment_name">
+          <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
+            {{attachment.filename || currentMachine.attachment_name}}
+          </button>
+          <div ngbDropdownMenu aria-labelledby="fileDropdown">
+            <button type="button" (click)="downloadFile()" ngbDropdownItem><i class="fas fa-file-download"></i> Download</button>
+            <button type="button" (click)="removeFile()" ngbDropdownItem><i class="fas fa-times"></i> Remove</button>
+            <button type="button" (click)="uploader.click()" ngbDropdownItem><i class="fas fa-file-upload"></i> Replace</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -124,10 +134,14 @@
           <small style="color: blue">Updated on: {{currentMachine.lastUpdated}}</small>
         </div>    
       </div>
-      <button type="button" class="btn btn-danger" (click)="onDelete()"><i class="fas fa-trash-alt"></i> Delete</button>
-      <button type="submit" class="btn btn-primary" [disabled]="!machineForm.form.valid || isLoading">
-        <span *ngIf="!isLoading"><i class="fas fa-save"></i> Save</span>
-        <span *ngIf="isLoading"><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Saving...</span>
+      <small *ngIf="hasError" style="color: red">Oops! Something went wrong. Please refresh this page and try again.</small>
+      <button type="button" class="btn btn-danger" (click)="onDelete()" [disabled]="isDeleting || isSaving">
+        <span *ngIf="!isDeleting"><i class="fas fa-trash-alt"></i> Delete</span>
+        <span *ngIf="isDeleting"><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Deleting...</span>
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="!machineForm.form.valid || isSaving || isDeleting">
+        <span *ngIf="!isSaving"><i class="fas fa-save"></i> Save</span>
+        <span *ngIf="isSaving"><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Saving...</span>
       </button>
     </div>
   </form>

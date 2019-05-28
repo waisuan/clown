@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, tap, map } from 'rxjs/operators';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -34,9 +34,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint).pipe(
-      //map(response => { return response; }),
       tap(response => this.log(response)),
-      //todo `getMachines(): succeeded`
       catchError(this.handleError('getMachines()', {}))
     );
   }
@@ -70,9 +68,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint).pipe(
-      //map(response => { return response; }),
       tap(response => this.log(response)),
-      //todo `searchMachines(): succeeded`
       catchError(this.handleError('searchMachinesInBatches()', {}))
     );
   }
@@ -81,6 +77,13 @@ export class ClownService {
     return this.http.put(`${url}/${api}/machine/${id}`, machine, httpOptions).pipe(
       tap(_ => this.log(`updated machine=${id}`)),
       catchError(this.handleError('updateMachine()'))
+    );
+  }
+
+  deleteMachine(id: string) {
+    return this.http.delete(`${url}/${api}/machine/${id}`).pipe(
+      tap(_ => this.log(`deleted machine=${id}`)),
+      catchError(this.handleError('deleteMachine()'))
     );
   }
 
@@ -114,7 +117,8 @@ export class ClownService {
       this.log(`${operation} failed: ${error.message}`);
 
       // Let the app keep running by returning an empty result.
-      return of(result as T);
+      //return of(result as T);
+      return throwError(error);
     };
   }
 }
