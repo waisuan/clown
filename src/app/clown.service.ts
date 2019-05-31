@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, tap, map } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
+import { environment } from '../environments/environment';
 
 const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -14,7 +15,7 @@ const httpFileOptions = {
   observe: 'response' as 'response'
 }
 const api = 'clown-api';
-const url = 'http://localhost:8080';
+const url = environment.apiUrl;
 
 @Injectable({
   providedIn: 'root'

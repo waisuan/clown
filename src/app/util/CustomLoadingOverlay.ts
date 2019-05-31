@@ -1,15 +1,15 @@
-import { Component, Input } from '@angular/core';
-import { ILoadingOverlayAngularComp } from "ag-grid-angular";
+// import { Component, Input } from '@angular/core';
+// import { ILoadingOverlayAngularComp } from "ag-grid-angular";
 
-@Component({
-    selector: 'app-loading-overlay',
-    template: `<ngx-spinner [fullScreen]="false" type = "ball-spin-fade"></ngx-spinner>`
-})
-export class CustomLoadingOverlay implements ILoadingOverlayAngularComp {
+// @Component({
+//     selector: 'app-loading-overlay',
+//     template: `<ngx-spinner [fullScreen]="false" type = "ball-spin-fade"></ngx-spinner>`
+// })
+// export class CustomLoadingOverlay implements ILoadingOverlayAngularComp {
 
-    private params: any;
+//     private params: any;
 
-    agInit(params): void {
-        this.params = params;
-    }
-}
+//     agInit(params): void {
+//         this.params = params;
+//     }
+// }
