@@ -13,10 +13,11 @@ const forceSSL = function() {
     }
 }
 
+app.use(forceSSL());
+app.use(express.static(__dirname + '/dist/clown'));
+
 app.get('/*', function(req, res) {
     res.sendFile(path.join(__dirname + '/dist/clown/index.html'));
 });
 
-app.use(forceSSL());
-app.use(express.static(__dirname + '/dist/clown'));
 app.listen(process.env.PORT || 4200);
