@@ -59,12 +59,14 @@ export class MachinesComponent implements OnInit {
   private isSaving = false;
   private isDeleting = false;
   private hasError = false;
+  private isInsert = false;
 
   @ViewChild('agGrid') agGrid: AgGridNg2;
   @ViewChild('machineModal') private machineModal;
   @Input() currentMachine;
   @Input() attachment = {};
 
+  // todo spinner
   constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
 
   ngOnInit() {
@@ -109,8 +111,20 @@ export class MachinesComponent implements OnInit {
     this.gridApi.setDatasource(this.dataSource);
   }
 
+  insertMachineModal() {
+    this.isInsert = true;
+    this.currentMachine = {};
+    this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting });
+    this.modalReference.result.then((result) => {
+      this.miniRefresh = true;
+      this.gridApi.setSortModel(this.gridApi.getSortModel());
+    }, (reason) => {
+      this.clearModalState();
+    });
+  }
+
   onRowDoubleClicked(params) {
-    console.log(params);
+    this.isInsert = false;
     this.currentMachine = sanitizeFormDataForRead(params['data']);
     this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting });
     this.modalReference.result.then((result) => {
@@ -122,7 +136,7 @@ export class MachinesComponent implements OnInit {
   }
 
   onSubmit() {
-    this.updateMachine(this.currentMachine['serialNumber'], sanitizeFormDataForWrite(this.currentMachine), this.attachment);
+    this.insertOrUpdateMachine(this.currentMachine['serialNumber'], sanitizeFormDataForWrite(this.currentMachine), this.attachment);
   }
 
   onDelete() {
@@ -224,7 +238,7 @@ export class MachinesComponent implements OnInit {
     this.searchTerms.next(term);
   }
 
-  updateMachine(id: string, machine: {}, attachment: {}) {
+  insertOrUpdateMachine(id: string, machine: {}, attachment: {}) {
     this.isSaving = true;
     this.hasError = false;
     this.clownService.insertAttachment(id, attachment['file']).subscribe((attachmentId) => {
@@ -233,16 +247,37 @@ export class MachinesComponent implements OnInit {
         machine['attachment'] = attachmentId['id'];
         machine['attachment_name'] = attachment['filename'];
       }
-      this.clownService.updateMachine(id, machine).subscribe(() => {
-        setTimeout(() => {
-          this.isSaving = false;
-          this.modalReference.close();
-          this.attachment = {}; 
-        }, 3000); // Xs delay
-      }, (err: Error) => {
+      if (this.isInsert) {
+        this.insertMachine(machine);
+      } else {
+        this.updateMachine(id, machine);
+      }
+    }, (err: Error) => {
+      this.isSaving = false;
+      this.hasError = true;
+    });
+  }
+
+  insertMachine(machine: {}) {
+    this.clownService.insertMachine(machine).subscribe(() => {
+      setTimeout(() => {
         this.isSaving = false;
-        this.hasError = true;
-      });
+        this.modalReference.close();
+        this.attachment = {}; 
+      }, 3000); // Xs delay
+    }, (err: Error) => {
+      this.isSaving = false;
+      this.hasError = true;
+    });
+  }
+
+  updateMachine(id:string, machine: {}) {
+    this.clownService.updateMachine(id, machine).subscribe(() => {
+      setTimeout(() => {
+        this.isSaving = false;
+        this.modalReference.close();
+        this.attachment = {}; 
+      }, 3000); // Xs delay
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;

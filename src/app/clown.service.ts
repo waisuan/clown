@@ -74,6 +74,13 @@ export class ClownService {
     );
   }
 
+  insertMachine(machine: {}) {
+    return this.http.post(`${url}/${api}/machine`, machine, httpOptions).pipe(
+      tap(_ => this.log(`inserted machine`)),
+      catchError(this.handleError('insertMachine()'))
+    );
+  }
+
   updateMachine(id: string, machine: {}) {
     return this.http.put(`${url}/${api}/machine/${id}`, machine, httpOptions).pipe(
       tap(_ => this.log(`updated machine=${id}`)),

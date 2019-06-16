@@ -7,7 +7,7 @@
         <input #searchMachinesBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchMachines(searchMachinesBox.value)">
         <button type="button" class="btn btn-warning"><i class="fas fa-bell"></i></button>
         <button type="button" class="btn btn-info"><i class="fas fa-history"></i></button>
-        <button type="button" class="btn btn-success"><i class="fas fa-plus"></i></button>
+        <button type="button" class="btn btn-success" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
     </div>
   </div>
   <ag-grid-angular #agGrid 
@@ -36,7 +36,7 @@
       <input type="text" style="display:none" />
       <div class="form-group">
         <label for="serialNumber">Serial No.</label>
-        <input #serialNumber="ngModel" type="text" class="form-control" id="serialNumber" name="serialNumber" [(ngModel)]="currentMachine.serialNumber" required disabled>
+        <input #serialNumber="ngModel" type="text" class="form-control" id="serialNumber" name="serialNumber" [(ngModel)]="currentMachine.serialNumber" [disabled]="!isInsert" required>
         <small [hidden]="serialNumber.valid || serialNumber.pristine" style="color: red">Please provide a serial number.</small>
       </div>
       <div class="form-row">
@@ -113,7 +113,7 @@
         <!-- <button type="button" class="btn btn-outline-secondary ml-1" *ngIf="currentMachine.attachment_name" (click)="downloadFile()" placement="bottom" ngbTooltip="Download file">
           <i class="fas fa-file-download"></i> {{currentMachine.attachment_name}}
         </button> -->
-        <div ngbDropdown class="d-inline-block" *ngIf="currentMachine.attachment_name">
+        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentMachine.attachment_name">
           <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
             {{attachment.filename || currentMachine.attachment_name}}
           </button>
@@ -126,7 +126,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <div class="mr-auto">
+      <div class="mr-auto" *ngIf="!isInsert">
         <div class="row" class="ml-auto">
           <small>Created on: {{currentMachine.dateOfCreation}}</small>
         </div>
@@ -135,7 +135,7 @@
         </div>    
       </div>
       <small *ngIf="hasError" style="color: red">Oops! Something went wrong. Please refresh this page and try again.</small>
-      <button type="button" class="btn btn-danger" (click)="onDelete()" [disabled]="isDeleting || isSaving">
+      <button type="button" class="btn btn-danger" *ngIf="!isInsert" (click)="onDelete()" [disabled]="isDeleting || isSaving">
         <span *ngIf="!isDeleting"><i class="fas fa-trash-alt"></i> Delete</span>
         <span *ngIf="isDeleting"><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Deleting...</span>
       </button>
