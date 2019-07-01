@@ -9,6 +9,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import * as FileSaver from 'file-saver';
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter';
 import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-machines',
@@ -89,6 +90,13 @@ export class MachinesComponent implements OnInit {
         }
         this.gridApi.setSortModel(null);
       });
+
+    //`ws://${environment.apiUrl}/clown-api/websocket`
+    var ws = new WebSocket(environment.websocketUrl);
+    ws.onopen = function() {};
+    ws.onmessage = function (received) {
+        console.log(received.data);
+    };
   }
 
   onGridReady(params) {
