@@ -61,6 +61,7 @@ export class MachinesComponent implements OnInit {
   private isDeleting = false;
   private hasError = false;
   private isInsert = false;
+  private dueMachines = [];
 
   @ViewChild('agGrid') agGrid: AgGridNg2;
   @ViewChild('machineModal') private machineModal;
@@ -79,23 +80,23 @@ export class MachinesComponent implements OnInit {
       // switch to new search observable each time the term changes
       switchMap((term: string) => of(term))).
       subscribe(response => {
-        console.log(response);
         this.fullRefresh = true;
         if (!response.trim()) {
           this.isFilterOn = false;
         } else {
           this.searchTerm = sanitizeSearchTerm(response);
-          console.log(this.searchTerm);
           this.isFilterOn = true;
         }
         this.gridApi.setSortModel(null);
       });
 
-    //`ws://${environment.apiUrl}/clown-api/websocket`
     var ws = new WebSocket(environment.websocketUrl);
-    ws.onopen = function() {};
-    ws.onmessage = function (received) {
+    ws.onopen = () => {};
+    ws.onmessage = (received) => {
         console.log(received.data);
+        if (received.data) {
+          this.dueMachines = JSON.parse(received.data);
+        }
     };
   }
 
@@ -105,13 +106,10 @@ export class MachinesComponent implements OnInit {
 
     this.dataSource = {
       getRows: (params: IGetRowsParams) => {
-        console.log("asking for " + params.startRow + " to " + params.endRow);
         this.refreshSortModel(params.sortModel);
         if (!this.isFilterOn) {
-          console.log('!isFilterOn');
           this.getMachines(params);
         } else {
-          console.log('isFilterOn');
           this.getMachinesThroughSearch(params);
         }
       }
@@ -190,14 +188,12 @@ export class MachinesComponent implements OnInit {
       var newSortCol = sortModel[0]['colId'];
       var newSortOrder = sortModel[0]['sort'];
       if (newSortCol != this.sortBy || newSortOrder != this.sortOrder) {
-        console.log(newSortCol + ", " + newSortOrder);
         this.sortBy = newSortCol;
         this.sortOrder = newSortOrder;
         this.numOfMachinesFetchedSoFar = 0;
       }
     } else {
-      if (this.sortBy && this.sortOrder) {
-        console.log('reset');
+      if (this.sortBy && this.sortOrder) {;
         this.sortBy = null;
         this.sortOrder = null;
         this.numOfMachinesFetchedSoFar = 0;
@@ -213,24 +209,20 @@ export class MachinesComponent implements OnInit {
   }
 
   getMachines(params: IGetRowsParams) {
-    console.log('getMachines');
     this.clownService.getMachines(this.cacheBlockSize, this.numOfMachinesFetchedSoFar, this.sortBy, this.sortOrder).subscribe(response => {
       var machines = response['data'];
       var totalNumOfMachines = response['count'];
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
-      console.log(this.numOfMachinesFetchedSoFar);
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
     });
   }
 
   getMachinesThroughSearch(params: IGetRowsParams) {
-    console.log('getMachinesThroughSearch');
     this.clownService.searchMachines(this.searchTerm, this.cacheBlockSize, this.numOfMachinesFetchedSoFar, this.sortBy, this.sortOrder).subscribe(response => {
       var machines = response['data'];
       var totalNumOfMachines = response['count'];
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
-      console.log(this.numOfMachinesFetchedSoFar);
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
     });
@@ -251,7 +243,6 @@ export class MachinesComponent implements OnInit {
     this.hasError = false;
     this.clownService.insertAttachment(id, attachment['file']).subscribe((attachmentId) => {
       if (attachmentId) {
-        console.log(attachmentId['id']);
         machine['attachment'] = attachmentId['id'];
         machine['attachment_name'] = attachment['filename'];
       }

@@ -5,7 +5,10 @@
           <span class="input-group-text"><i class="fas fa-search"></i></span>
         </div>
         <input #searchMachinesBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchMachines(searchMachinesBox.value)">
-        <button type="button" class="btn btn-warning"><i class="fas fa-bell"></i></button>
+        <button type="button" class="btn btn-warning" ngbTooltip="You have {{dueMachines.length}} machines due" [disabled]="dueMachines?.length == 0">
+          <span *ngIf="dueMachines?.length > 0"><i class="fas fa-bell"></i></span>
+          <span *ngIf="dueMachines?.length == 0"><i class="fas fa-bell-slash"></i></span>
+        </button>
         <button type="button" class="btn btn-info"><i class="fas fa-history"></i></button>
         <button type="button" class="btn btn-success" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
     </div>
@@ -115,7 +118,7 @@
         </button> -->
         <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentMachine.attachment_name">
           <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
-            {{attachment.filename || currentMachine.attachment_name}}
+            {{currentMachine.attachment_name}}
           </button>
           <div ngbDropdownMenu aria-labelledby="fileDropdown">
             <button type="button" (click)="downloadFile()" ngbDropdownItem><i class="fas fa-file-download"></i> Download</button>
@@ -147,4 +150,4 @@
   </form>
 </ng-template>
 
-<ngx-spinner [fullScreen]="true" type="ball-spin-fade"></ngx-spinner>
+<!-- <ngx-spinner [fullScreen]="true" type="ball-spin-fade"></ngx-spinner> -->
