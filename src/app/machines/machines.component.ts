@@ -61,12 +61,12 @@ export class MachinesComponent implements OnInit {
   private isDeleting = false;
   private hasError = false;
   private isInsert = false;
-  private dueMachines = [];
 
   @ViewChild('agGrid') agGrid: AgGridNg2;
   @ViewChild('machineModal') private machineModal;
   @Input() currentMachine;
   @Input() attachment = {};
+  @Input() dueMachines = [];
 
   // todo spinner
   constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
