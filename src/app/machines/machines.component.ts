@@ -61,12 +61,15 @@ export class MachinesComponent implements OnInit {
   private isDeleting = false;
   private hasError = false;
   private isInsert = false;
+  private dueMachinesCount = 0;
+  private showDueMachinesOnly = false;
+  private showDueMachineOptions = { 'almostDue': 0, 'due': 0, 'overDue': 0 };
+  private showDueMachineStatus;
 
   @ViewChild('agGrid') agGrid: AgGridNg2;
   @ViewChild('machineModal') private machineModal;
   @Input() currentMachine;
   @Input() attachment = {};
-  @Input() dueMachines = [];
 
   // todo spinner
   constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
@@ -95,7 +98,7 @@ export class MachinesComponent implements OnInit {
     ws.onmessage = (received) => {
         console.log(received.data);
         if (received.data) {
-          this.dueMachines = JSON.parse(received.data);
+          this.dueMachinesCount = JSON.parse(received.data);
         }
     };
   }
@@ -107,7 +110,9 @@ export class MachinesComponent implements OnInit {
     this.dataSource = {
       getRows: (params: IGetRowsParams) => {
         this.refreshSortModel(params.sortModel);
-        if (!this.isFilterOn) {
+        if (this.showDueMachinesOnly) {
+          this.getDueMachines(params);
+        } else if (!this.isFilterOn) {
           this.getMachines(params);
         } else {
           this.getMachinesThroughSearch(params);
@@ -147,6 +152,20 @@ export class MachinesComponent implements OnInit {
 
   onDelete() {
     this.deleteMachine(this.currentMachine['serialNumber']);
+  }
+
+  onShowDueMachines(status) {
+    this.showDueMachineOptions[status] ^= 1;
+    this.showDueMachineStatus = [];
+    for (var k in this.showDueMachineOptions) {
+      if (this.showDueMachineOptions[k]) {
+        this.showDueMachineStatus.push(k);
+      }
+    }
+    this.showDueMachineStatus = this.showDueMachineStatus.join(",");
+    this.fullRefresh = true;
+    this.showDueMachinesOnly = this.showDueMachineStatus ? true : false;
+    this.gridApi.setSortModel(null);
   }
 
   downloadFile() {
@@ -220,6 +239,16 @@ export class MachinesComponent implements OnInit {
 
   getMachinesThroughSearch(params: IGetRowsParams) {
     this.clownService.searchMachines(this.searchTerm, this.cacheBlockSize, this.numOfMachinesFetchedSoFar, this.sortBy, this.sortOrder).subscribe(response => {
+      var machines = response['data'];
+      var totalNumOfMachines = response['count'];
+      this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
+      params.successCallback(machines, totalNumOfMachines);
+      this.gridApi.sizeColumnsToFit();
+    });
+  }
+
+  getDueMachines(params: IGetRowsParams) {
+    this.clownService.getDueMachines(this.showDueMachineStatus, this.cacheBlockSize, this.numOfMachinesFetchedSoFar, this.sortBy, this.sortOrder).subscribe(response => {
       var machines = response['data'];
       var totalNumOfMachines = response['count'];
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;

@@ -5,10 +5,31 @@
           <span class="input-group-text"><i class="fas fa-search"></i></span>
         </div>
         <input #searchMachinesBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchMachines(searchMachinesBox.value)">
-        <button type="button" class="btn btn-warning" ngbTooltip="You have {{dueMachines.length}} machines due" [disabled]="dueMachines?.length == 0">
-          <span *ngIf="dueMachines?.length > 0"><i class="fas fa-bell"></i></span>
-          <span *ngIf="dueMachines?.length == 0"><i class="fas fa-bell-slash"></i></span>
+        <button type="button" class="btn btn-warning" ngbTooltip="You have {{dueMachinesCount}} machines due" *ngIf="dueMachinesCount == 0">
+          <span><i class="fas fa-bell-slash"></i></span>
         </button>
+        <div ngbDropdown class="d-inline-block">
+          <button class="btn btn-warning" id="dueMachinesNotify" ngbDropdownToggle ngbTooltip="You have {{dueMachinesCount}} machines due" *ngIf="dueMachinesCount != 0">
+            <span><i class="fas fa-bell"></i></span>
+          </button>
+          <div ngbDropdownMenu aria-labelledby="dueMachinesNotify">
+              <div class="btn-group btn-group-toggle" ngbDropdownItem>
+                <label class="btn-outline-primary" ngbButtonLabel>
+                  <input type="checkbox" ngbButton (click)="onShowDueMachines('almostDue')"> Show almost due
+                </label>
+                <label class="btn-outline-primary" ngbButtonLabel>
+                  <input type="checkbox" ngbButton (click)="onShowDueMachines('due')"> Show due
+                </label>
+                <label class="btn-outline-primary" ngbButtonLabel>
+                  <input type="checkbox" ngbButton (click)="onShowDueMachines('overDue')"> Show overdue
+                </label>
+              </div>
+          </div>
+        </div>
+        <!-- <button type="button" class="btn btn-warning" ngbTooltip="You have {{dueMachinesCount}} machines due" [disabled]="dueMachinesCount == 0" (click)="onShowDueMachines()">
+          <span *ngIf="dueMachinesCount > 0"><i class="fas fa-bell"></i></span>
+          <span *ngIf="dueMachinesCount == 0"><i class="fas fa-bell-slash"></i></span>
+        </button> -->
         <button type="button" class="btn btn-info"><i class="fas fa-history"></i></button>
         <button type="button" class="btn btn-success" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
     </div>

@@ -40,6 +40,54 @@ export class ClownService {
     );
   }
 
+  getDueMachines(status: string, limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
+    var endpoint = `${url}/${api}/machines/due/${status}`;
+    if (limit != null) {
+      endpoint += `/${limit}`;
+    }
+    if (lastMachineFetched != null) {
+      endpoint += `/${lastMachineFetched}`;
+    }
+    if (sortBy != null && sortOrder != null) {
+      endpoint += `/${sortBy}/${sortOrder}`;
+    }
+    return this.http.get(endpoint).pipe(
+      tap(response => this.log(response))
+    );
+  }
+
+  // getAlmostDueMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
+  //   var endpoint = `${url}/${api}/machines/almost-due`;
+  //   if (limit != null) {
+  //     endpoint += `/${limit}`;
+  //   }
+  //   if (lastMachineFetched != null) {
+  //     endpoint += `/${lastMachineFetched}`;
+  //   }
+  //   if (sortBy != null && sortOrder != null) {
+  //     endpoint += `/${sortBy}/${sortOrder}`;
+  //   }
+  //   return this.http.get(endpoint).pipe(
+  //     tap(response => this.log(response))
+  //   );
+  // }
+
+  // getOverDueMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
+  //   var endpoint = `${url}/${api}/machines/overdue`;
+  //   if (limit != null) {
+  //     endpoint += `/${limit}`;
+  //   }
+  //   if (lastMachineFetched != null) {
+  //     endpoint += `/${lastMachineFetched}`;
+  //   }
+  //   if (sortBy != null && sortOrder != null) {
+  //     endpoint += `/${sortBy}/${sortOrder}`;
+  //   }
+  //   return this.http.get(endpoint).pipe(
+  //     tap(response => this.log(response))
+  //   );
+  // }
+
   getAttachment(id: string) {
     var endpoint = `${url}/${api}/attachment/${id}`;
     return this.http.get(endpoint, httpFileOptions).pipe(
