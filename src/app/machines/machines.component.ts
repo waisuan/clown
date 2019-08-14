@@ -61,7 +61,6 @@ export class MachinesComponent implements OnInit {
   private isDeleting = false;
   private hasError = false;
   private isInsert = false;
-  private dueMachinesCount = 0;
   private showDueMachinesOnly = false;
   private showDueMachineOptions = { 'almostDue': 0, 'due': 0, 'overDue': 0 };
   private showDueMachineStatus;
@@ -70,6 +69,7 @@ export class MachinesComponent implements OnInit {
   @ViewChild('machineModal') private machineModal;
   @Input() currentMachine;
   @Input() attachment = {};
+  @Input() dueMachinesCount = 0;
 
   // todo spinner
   constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
