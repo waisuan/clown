@@ -93,7 +93,7 @@ export class MachinesComponent implements OnInit {
         this.gridApi.setSortModel(null);
       });
 
-    var ws = new WebSocket(environment.websocketUrl);
+    var ws = new WebSocket(environment.machinesWebsocketUrl);
     ws.onopen = () => {};
     ws.onmessage = (received) => {
         console.log(received.data);

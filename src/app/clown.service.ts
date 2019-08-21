@@ -56,38 +56,6 @@ export class ClownService {
     );
   }
 
-  // getAlmostDueMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
-  //   var endpoint = `${url}/${api}/machines/almost-due`;
-  //   if (limit != null) {
-  //     endpoint += `/${limit}`;
-  //   }
-  //   if (lastMachineFetched != null) {
-  //     endpoint += `/${lastMachineFetched}`;
-  //   }
-  //   if (sortBy != null && sortOrder != null) {
-  //     endpoint += `/${sortBy}/${sortOrder}`;
-  //   }
-  //   return this.http.get(endpoint).pipe(
-  //     tap(response => this.log(response))
-  //   );
-  // }
-
-  // getOverDueMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
-  //   var endpoint = `${url}/${api}/machines/overdue`;
-  //   if (limit != null) {
-  //     endpoint += `/${limit}`;
-  //   }
-  //   if (lastMachineFetched != null) {
-  //     endpoint += `/${lastMachineFetched}`;
-  //   }
-  //   if (sortBy != null && sortOrder != null) {
-  //     endpoint += `/${sortBy}/${sortOrder}`;
-  //   }
-  //   return this.http.get(endpoint).pipe(
-  //     tap(response => this.log(response))
-  //   );
-  // }
-
   getAttachment(id: string) {
     var endpoint = `${url}/${api}/attachment/${id}`;
     return this.http.get(endpoint, httpFileOptions).pipe(
@@ -123,21 +91,21 @@ export class ClownService {
   }
 
   insertMachine(machine: {}) {
-    return this.http.post(`${url}/${api}/machine`, machine, httpOptions).pipe(
+    return this.http.post(`${url}/${api}/machines`, machine, httpOptions).pipe(
       tap(_ => this.log(`inserted machine`)),
       catchError(this.handleError('insertMachine()'))
     );
   }
 
   updateMachine(id: string, machine: {}) {
-    return this.http.put(`${url}/${api}/machine/${id}`, machine, httpOptions).pipe(
+    return this.http.put(`${url}/${api}/machines/${id}`, machine, httpOptions).pipe(
       tap(_ => this.log(`updated machine=${id}`)),
       catchError(this.handleError('updateMachine()'))
     );
   }
 
   deleteMachine(id: string) {
-    return this.http.delete(`${url}/${api}/machine/${id}`).pipe(
+    return this.http.delete(`${url}/${api}/machines/${id}`).pipe(
       tap(_ => this.log(`deleted machine=${id}`)),
       catchError(this.handleError('deleteMachine()'))
     );
