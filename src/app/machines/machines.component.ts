@@ -178,6 +178,7 @@ export class MachinesComponent implements OnInit {
   }
 
   uploadFile(event) {
+    this.removeFile();
     var fileList: FileList = event.target.files;
     if (fileList.length > 0) {
       var file:File = fileList[0];

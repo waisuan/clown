@@ -134,9 +134,6 @@
         <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentMachine.attachment_name" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
           <i class="fas fa-file-upload"></i> {{attachment.filename || "Upload a file..."}}
         </button>
-        <!-- <button type="button" class="btn btn-outline-secondary ml-1" *ngIf="currentMachine.attachment_name" (click)="downloadFile()" placement="bottom" ngbTooltip="Download file">
-          <i class="fas fa-file-download"></i> {{currentMachine.attachment_name}}
-        </button> -->
         <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentMachine.attachment_name">
           <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
             {{currentMachine.attachment_name}}
