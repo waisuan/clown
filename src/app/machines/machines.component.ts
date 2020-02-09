@@ -10,6 +10,7 @@ import * as FileSaver from 'file-saver';
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter';
 import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-machines',
@@ -70,9 +71,10 @@ export class MachinesComponent implements OnInit {
   @Input() currentMachine;
   @Input() attachment = {};
   @Input() dueMachinesCount = 0;
+  @Input() canShowHistory;
 
-  // todo spinner
-  constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService) { }
+  // TODO spinner?
+  constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService, private router: Router) { }
 
   ngOnInit() {
     this.searchTerms.pipe(
@@ -132,6 +134,15 @@ export class MachinesComponent implements OnInit {
     }, (reason) => {
       this.clearModalState();
     });
+  }
+
+  showHistory() {
+    this.router.navigate(['/history', this.canShowHistory]);
+  }
+
+  onRowClicked(params) {
+    console.log(params)
+    this.canShowHistory = params['data']['serialNumber'];
   }
 
   onRowDoubleClicked(params) {

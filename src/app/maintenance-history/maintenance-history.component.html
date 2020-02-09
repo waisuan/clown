@@ -1,0 +1,21 @@
+<div class="clown-main">
+  <ag-grid-angular #agGrid 
+    class="ag-theme-balham"
+    (gridReady)="onGridReady($event)"
+    (rowDoubleClicked)="onRowDoubleClicked($event)"
+    (rowClicked)="onRowClicked($event)"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [pagination]="true"
+    [suppressNoRowsOverlay]="true"
+    [suppressLoadingOverlay]="true"
+    [paginationPageSize]="paginationPageSize"
+    [cacheBlockSize]="cacheBlockSize"
+    [animateRows]="true"
+    [rowSelection]="'multiple'"
+    [rowModelType]="'infinite'"
+    [domLayout]="'autoHeight'"
+    >
+  </ag-grid-angular>
+</div>

@@ -10,11 +10,13 @@ import { NgxSpinnerModule } from 'ngx-spinner';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MachinesComponent } from './machines/machines.component';
+import { MaintenanceHistoryComponent } from './maintenance-history/maintenance-history.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MachinesComponent
+    MachinesComponent,
+    MaintenanceHistoryComponent
   ],
   imports: [
     BrowserModule,
