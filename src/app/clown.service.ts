@@ -121,6 +121,37 @@ export class ClownService {
     );
   }
 
+  getHistory(machineId: string, limit: number=null, lastBatchFetched: number=null, sortBy: string=null, sortOrder: string=null) {
+    var endpoint = `${url}/${api}/history/${machineId}`;
+    if (limit != null) {
+      endpoint += `/${limit}`;
+    }
+    if (lastBatchFetched != null) {
+      endpoint += `/${lastBatchFetched}`;
+    }
+    if (sortBy != null && sortOrder != null) {
+      endpoint += `/${sortBy}/${sortOrder}`;
+    }
+    return this.http.get(endpoint).pipe(
+      tap(response => this.log(response)),
+      catchError(this.handleError('getHistory()', {}))
+    );
+  }
+
+  updateHistory(id: string, newValues: {}) {
+    return this.http.put(`${url}/${api}/history/${id}`, newValues, httpOptions).pipe(
+      tap(_ => this.log(`updated history=${id}`)),
+      catchError(this.handleError('updateHistory()'))
+    );
+  }
+
+  deleteHistory(id: string) {
+    return this.http.delete(`${url}/${api}/history/${id}`).pipe(
+      tap(_ => this.log(`deleted history=${id}`)),
+      catchError(this.handleError('deleteHistory()'))
+    );
+  }
+
   private log(msg: any) {
     console.log(msg);
   }

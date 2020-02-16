@@ -28,6 +28,10 @@ export function sanitizeFormDataForRead(data: {}) {
         var tokens = sanitizedData['ppmDate'].split('/');
         sanitizedData['ppmDate'] = { year: parseInt(tokens[2]), month: parseInt(tokens[1]), day: parseInt(tokens[0]) };
     }
+    if (sanitizedData['workOrderDate']) {
+        var tokens = sanitizedData['workOrderDate'].split('/');
+        sanitizedData['workOrderDate'] = { year: parseInt(tokens[2]), month: parseInt(tokens[1]), day: parseInt(tokens[0]) };
+    }    
     return sanitizedData;
 }
 
@@ -39,5 +43,8 @@ export function sanitizeFormDataForWrite(data: {}) {
     if (sanitizedData['ppmDate']) {
         sanitizedData['ppmDate'] = padNumber(sanitizedData['ppmDate']['day']) + '/' + padNumber(sanitizedData['ppmDate']['month']) + '/' + sanitizedData['ppmDate']['year'];
     }
+    if (sanitizedData['workOrderDate']) {
+        sanitizedData['workOrderDate'] = padNumber(sanitizedData['workOrderDate']['day']) + '/' + padNumber(sanitizedData['workOrderDate']['month']) + '/' + sanitizedData['workOrderDate']['year'];
+    }   
     return sanitizedData;
 }

@@ -1,9 +1,18 @@
 <div class="clown-main">
+  <div class="clown-main-actions">
+    <div class="input-group col-4">
+        <div class="input-group-prepend">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+        </div>
+        <input #searchHistoryBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchHistory(searchHistoryBox.value)">
+        <button type="button" class="btn btn-success" (click)="insertHistoryModal()"><i class="fas fa-plus"></i></button>
+    </div>
+  </div>
+
   <ag-grid-angular #agGrid 
     class="ag-theme-balham"
     (gridReady)="onGridReady($event)"
     (rowDoubleClicked)="onRowDoubleClicked($event)"
-    (rowClicked)="onRowClicked($event)"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [defaultColDef]="defaultColDef"
@@ -19,3 +28,80 @@
     >
   </ag-grid-angular>
 </div>
+
+<ng-template #rowModal let-modal>
+  <form #rowForm="ngForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="modal-body">
+      <input type="text" style="display:none" />
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="serialNumber">Serial No.</label>
+          <input type="text" class="form-control" id="serialNumber" name="serialNumber" [(ngModel)]="currentRecord.serialNumber" disabled>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="workOrderNumber">Work Order No.</label>
+          <input #workOrderNumber="ngModel" type="text" class="form-control" id="workOrderNumber" name="workOrderNumber" [(ngModel)]="currentRecord.workOrderNumber" [disabled]="!isInsert" required>
+          <small [hidden]="workOrderNumber.valid || workOrderNumber.pristine" style="color: red">Please provide a work order number.</small>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="reportedBy">Reported By</label>
+          <input type="text" class="form-control" id="reportedBy" name="reportedBy" [(ngModel)]="currentRecord.reportedBy">
+        </div>
+        <div class="form-group col-md-4">
+          <label for="workOrderDate">Work Order Date</label>
+          <div class="input-group">
+            <input class="form-control" placeholder="dd/mm/yyyy" name="workOrderDate" [(ngModel)]="currentRecord.workOrderDate" ngbDatepicker #workOrderDate="ngbDatepicker">
+            <div class="input-group-prepend">
+              <button class="btn btn-outline-secondary" (click)="workOrderDate.toggle()" type="button"><i class="fas fa-calendar-alt"></i></button>
+            </div>
+          </div>  
+        </div>
+        <div class="form-group col-md-4">
+          <label for="workOrderType">Work Order Type</label>
+          <input type="text" class="form-control" id="workOrderType" name="workOrderType" [(ngModel)]="currentRecord.workOrderType">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="actionTaken">Action Taken</label>
+        <textarea class="form-control" id="actionTaken" name="actionTaken" rows="4" [(ngModel)]="currentRecord.actionTaken"></textarea>
+      </div>
+      <div class="form-group">
+        <input hidden type="file" #uploader (change)="uploadFile($event)"/>
+        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentRecord.attachment_name" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
+          <i class="fas fa-file-upload"></i> {{attachment.filename || "Upload a file..."}}
+        </button>
+        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentRecord.attachment_name">
+          <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
+            {{currentRecord.attachment_name}}
+          </button>
+          <div ngbDropdownMenu aria-labelledby="fileDropdown">
+            <button type="button" (click)="downloadFile()" ngbDropdownItem><i class="fas fa-file-download"></i> Download</button>
+            <button type="button" (click)="removeFile()" ngbDropdownItem><i class="fas fa-times"></i> Remove</button>
+            <button type="button" (click)="uploader.click()" ngbDropdownItem><i class="fas fa-file-upload"></i> Replace</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="mr-auto" *ngIf="!isInsert">
+        <div class="row" class="ml-auto">
+          <small>Created on: {{currentRecord.dateOfCreation}}</small>
+        </div>
+        <div class="row" class="ml-auto">
+          <small style="color: blue">Updated on: {{currentRecord.lastUpdated}}</small>
+        </div>    
+      </div>
+      <small *ngIf="hasError" style="color: red">Oops! Something went wrong. Please refresh this page and try again.</small>
+      <button type="button" class="btn btn-danger" *ngIf="!isInsert" (click)="onDelete()" [disabled]="isDeleting || isSaving">
+        <span *ngIf="!isDeleting"><i class="fas fa-trash-alt"></i> Delete</span>
+        <span *ngIf="isDeleting"><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Deleting...</span>
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="!rowForm.form.valid || isSaving || isDeleting">
+        <span *ngIf="!isSaving"><i class="fas fa-save"></i> Save</span>
+        <span *ngIf="isSaving"><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Saving...</span>
+      </button>
+    </div>
+  </form>
+</ng-template>

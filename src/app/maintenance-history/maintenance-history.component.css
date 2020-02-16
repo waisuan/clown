@@ -19,3 +19,7 @@
 .clown-main-actions .btn {
     margin-left: 5px;
 }
+
+.cell-wrap-text {
+    white-space: normal !important;
+}
