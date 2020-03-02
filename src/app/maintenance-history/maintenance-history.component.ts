@@ -53,7 +53,6 @@ export class MaintenanceHistoryComponent implements OnInit {
   private searchTerms = new Subject<string>();
   private searchTerm = '';
   private dataSource: IDatasource;
-  private machineId: string;
   private subscription: any;
   private modalReference: NgbModalRef;
   private isSaving = false;
@@ -64,6 +63,7 @@ export class MaintenanceHistoryComponent implements OnInit {
   @ViewChild('rowModal') private rowModal;
   @Input() currentRecord;
   @Input() attachment = {};
+  @Input() machineId: string;
 
   constructor(private clownService: ClownService, private modalService: NgbModal, private route: ActivatedRoute) {}
 
