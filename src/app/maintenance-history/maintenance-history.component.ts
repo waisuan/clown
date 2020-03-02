@@ -10,6 +10,7 @@ import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatt
 import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
 import { environment } from '../../environments/environment';
 import { ActivatedRoute } from '@angular/router';
+import { ButtonCellComponent } from '../button-cell/button-cell.component';
 
 @Component({
   selector: 'app-maintenance-history',
@@ -26,7 +27,10 @@ export class MaintenanceHistoryComponent implements OnInit {
     { headerName: 'Work Order Date', field: 'workOrderDate' },
     { headerName: 'Work Order Type', field: 'workOrderType' },
     { headerName: 'Reported By', field: 'reportedBy' },
-    { headerName: 'Action Taken', field: 'actionTaken', sortable: false }, //, width: 800
+    { headerName: 'Action Taken', field: 'actionTaken', sortable: false, width: 800 },
+    { headerName: 'Attachment', field: 'attachment', sortable: false,
+      cellRendererFramework: ButtonCellComponent
+    },
     { headerName: 'Created On', field: 'dateOfCreation' },
     { headerName: 'UpdatedOn', field: 'lastUpdated' }
   ];
@@ -43,8 +47,11 @@ export class MaintenanceHistoryComponent implements OnInit {
   private numOfRecordsFetchedSoFar = 0;
   private sortBy = null;
   private sortOrder = null;
+  private isFilterOn = false;
   private fullRefresh = false;
   private miniRefresh = false;
+  private searchTerms = new Subject<string>();
+  private searchTerm = '';
   private dataSource: IDatasource;
   private machineId: string;
   private subscription: any;
@@ -61,6 +68,24 @@ export class MaintenanceHistoryComponent implements OnInit {
   constructor(private clownService: ClownService, private modalService: NgbModal, private route: ActivatedRoute) {}
 
   ngOnInit() {
+    this.searchTerms.pipe(
+      // wait X-ms after each keystroke before considering the term
+      debounceTime(300),
+      // ignore new term if same as previous term
+      distinctUntilChanged(),
+      // switch to new search observable each time the term changes
+      switchMap((term: string) => of(term))).
+      subscribe(response => {
+        this.fullRefresh = true;
+        if (!response.trim()) {
+          this.isFilterOn = false;
+        } else {
+          this.searchTerm = sanitizeSearchTerm(response);
+          this.isFilterOn = true;
+        }
+        this.gridApi.setSortModel(null);
+      });
+
     this.subscription = this.route.params.subscribe(params => {
       this.machineId = params['id'];
     });
@@ -73,14 +98,17 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.dataSource = {
       getRows: (params: IGetRowsParams) => {
         this.refreshSortModel(params.sortModel);
-        this.getHistory(params);
+        if (!this.isFilterOn) {
+          this.getHistory(params);
+        } else {
+          this.getHistoryThroughSearch(params);
+        }
       }
     };
     this.gridApi.setDatasource(this.dataSource);
   }
 
   getRowHeight(params) {
-    console.log(params);
     return 28 * (Math.floor(params.data.actionTaken.length / 60) + 1);
   };
 
@@ -100,8 +128,8 @@ export class MaintenanceHistoryComponent implements OnInit {
         return;
     }
 
-    this.gridApi.onRowHeightChanged();
-    // this.gridApi.resetRowHeights();
+    //this.gridApi.onRowHeightChanged();
+    //this.gridApi.rowHeight = gridHeight;
 
     // let elements = this.el.nativeElement.getElementsByClassName('ag-body-container');
     // if (elements) {
@@ -129,9 +157,13 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.deleteHistory(this.currentRecord['_id']);
   }
 
+  searchHistory(term: string) {
+    this.searchTerms.next(term);
+  }
+
   insertHistoryModal() {
     this.isInsert = true;
-    this.currentRecord = {};
+    this.currentRecord = { 'serialNumber': this.machineId };
     this.modalReference = this.modalService.open(this.rowModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting });
     this.modalReference.result.then((result) => {
       this.miniRefresh = true;
@@ -215,7 +247,16 @@ export class MaintenanceHistoryComponent implements OnInit {
       params.successCallback(history, totalNumOfRecords);
       this.gridApi.sizeColumnsToFit();
       //this.setRowsHeight();
-      // this.gridApi.resetRowHeights();
+    });
+  }
+
+  getHistoryThroughSearch(params: IGetRowsParams) {
+    this.clownService.searchHistory(this.machineId, this.searchTerm, this.cacheBlockSize, this.numOfRecordsFetchedSoFar, this.sortBy, this.sortOrder).subscribe(response => {
+      var history = response['data'];
+      var totalNumOfRecords = response['count'];
+      this.numOfRecordsFetchedSoFar += this.cacheBlockSize;
+      params.successCallback(history, totalNumOfRecords);
+      this.gridApi.sizeColumnsToFit();
     });
   }
 
@@ -228,10 +269,23 @@ export class MaintenanceHistoryComponent implements OnInit {
         values['attachment_name'] = attachment['filename'];
       }
       if (this.isInsert) {
-        //this.insertMachine(machine);
+        this.insertHistory(values);
       } else {
         this.updateHistory(id, values);
       }
+    }, (err: Error) => {
+      this.isSaving = false;
+      this.hasError = true;
+    });
+  }
+
+  insertHistory(history: {}) {
+    this.clownService.insertHistory(history).subscribe(() => {
+      setTimeout(() => {
+        this.isSaving = false;
+        this.modalReference.close();
+        this.attachment = {}; 
+      }, 3000); // Xs delay
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;

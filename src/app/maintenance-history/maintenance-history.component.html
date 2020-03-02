@@ -1,11 +1,14 @@
 <div class="clown-main">
+  <div>
+    <h6><a href="/" class="no-underline-on-hover"><i class="fas fa-arrow-left"></i> Back</a> / <font color="SlateGray">{{ machineId }}</font> / History</h6>
+  </div>
   <div class="clown-main-actions">
     <div class="input-group col-4">
         <div class="input-group-prepend">
           <span class="input-group-text"><i class="fas fa-search"></i></span>
         </div>
         <input #searchHistoryBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchHistory(searchHistoryBox.value)">
-        <button type="button" class="btn btn-success" (click)="insertHistoryModal()"><i class="fas fa-plus"></i></button>
+        <button type="button" class="btn btn-success" ngbTooltip="+ New Record" (click)="insertHistoryModal()"><i class="fas fa-plus"></i></button>
     </div>
   </div>
 

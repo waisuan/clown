@@ -1,5 +1,5 @@
 <div class="clown-main">
-  <div class="clown-main-actions">
+  <div class="clown-main-actions fixed">
     <div class="input-group col-4">
         <div class="input-group-prepend">
           <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -26,8 +26,10 @@
               </div>
           </div>
         </div>
-        <button type="button" class="btn btn-info" [disabled]="!canShowHistory" ngbTooltip="Show history" (click)="showHistory()"><i class="fas fa-history"></i></button>
-        <button type="button" class="btn btn-success" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
+        <button type="button" class="btn btn-info" ngbTooltip="Show history" (click)="showHistory()" [disabled]="!selectedMachine">
+          <span class="badge badge-pill badge-light">{{selectedMachineHistoryCount}}</span>
+        </button> 
+        <button type="button" class="btn btn-success" ngbTooltip="+ New machine" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
     </div>
   </div>
   <ag-grid-angular #agGrid 
@@ -164,5 +166,3 @@
     </div>
   </form>
 </ng-template>
-
-<!-- <ngx-spinner [fullScreen]="true" type="ball-spin-fade"></ngx-spinner> -->

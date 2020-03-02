@@ -5,12 +5,13 @@ import { IDatasource, IGetRowsParams } from 'ag-grid-community';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { NgbModal, ModalDismissReasons, NgbDateParserFormatter, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { NgxSpinnerService } from 'ngx-spinner';
 import * as FileSaver from 'file-saver';
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter';
 import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
+import { ButtonCellComponent } from '../button-cell/button-cell.component';
+import { CheckboxCellComponent } from '../checkbox-cell/checkbox-cell.component';
 
 @Component({
   selector: 'app-machines',
@@ -35,6 +36,12 @@ export class MachinesComponent implements OnInit {
     { headerName: 'PPM Date', field: 'ppmDate' },
     { headerName: 'Reported By', field: 'reportedBy' },
     { headerName: 'Assignee', field: 'personInCharge' },
+    { headerName: 'Attachment', field: 'attachment', sortable: false,
+      cellRendererFramework: ButtonCellComponent
+    },
+    { headerName: 'Notes?', field: 'additionalNotes', sortable: false, width: 105,
+      cellRendererFramework: CheckboxCellComponent
+    },
     { headerName: 'Created On', field: 'dateOfCreation' },
     { headerName: 'Updated On', field: 'lastUpdated' }
   ];
@@ -71,10 +78,10 @@ export class MachinesComponent implements OnInit {
   @Input() currentMachine;
   @Input() attachment = {};
   @Input() dueMachinesCount = 0;
-  @Input() canShowHistory;
+  @Input() selectedMachine;
+  @Input() selectedMachineHistoryCount = 0;
 
-  // TODO spinner?
-  constructor(private clownService: ClownService, private modalService: NgbModal, private spinner: NgxSpinnerService, private router: Router) { }
+  constructor(private clownService: ClownService, private modalService: NgbModal, private router: Router) { }
 
   ngOnInit() {
     this.searchTerms.pipe(
@@ -137,12 +144,12 @@ export class MachinesComponent implements OnInit {
   }
 
   showHistory() {
-    this.router.navigate(['/history', this.canShowHistory]);
+    this.router.navigate(['/history', this.selectedMachine]);
   }
 
   onRowClicked(params) {
-    console.log(params)
-    this.canShowHistory = params['data']['serialNumber'];
+    this.selectedMachine = params['data']['serialNumber'];
+    this.selectedMachineHistoryCount = params['data']['historyCount'];
   }
 
   onRowDoubleClicked(params) {

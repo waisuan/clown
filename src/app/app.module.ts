@@ -11,12 +11,16 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MachinesComponent } from './machines/machines.component';
 import { MaintenanceHistoryComponent } from './maintenance-history/maintenance-history.component';
+import { ButtonCellComponent } from './button-cell/button-cell.component';
+import { CheckboxCellComponent } from './checkbox-cell/checkbox-cell.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MachinesComponent,
-    MaintenanceHistoryComponent
+    MaintenanceHistoryComponent,
+    ButtonCellComponent,
+    CheckboxCellComponent
   ],
   imports: [
     BrowserModule,
@@ -28,6 +32,7 @@ import { MaintenanceHistoryComponent } from './maintenance-history/maintenance-h
     NgxSpinnerModule
   ],
   providers: [],
+  entryComponents: [ButtonCellComponent, CheckboxCellComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -122,7 +122,7 @@ export class ClownService {
   }
 
   getHistory(machineId: string, limit: number=null, lastBatchFetched: number=null, sortBy: string=null, sortOrder: string=null) {
-    var endpoint = `${url}/${api}/history/${machineId}`;
+    var endpoint = `${url}/${api}/history/fetch/${machineId}`;
     if (limit != null) {
       endpoint += `/${limit}`;
     }
@@ -135,6 +135,33 @@ export class ClownService {
     return this.http.get(endpoint).pipe(
       tap(response => this.log(response)),
       catchError(this.handleError('getHistory()', {}))
+    );
+  }
+
+  searchHistory(machineId: string, term: string, limit: number = null, lastMachineFetched: number = null, sortBy: string = null, sortOrder: string = null) {
+    if (!term.trim()) {
+      return this.getHistory(machineId, limit, lastMachineFetched, sortBy, sortOrder)
+    }
+    var endpoint = `${url}/${api}/history/search/${machineId}/${term}`;
+    if (limit != null) {
+      endpoint += `/${limit}`;
+    }
+    if (lastMachineFetched != null) {
+      endpoint += `/${lastMachineFetched}`;
+    }
+    if (sortBy != null && sortOrder != null) {
+      endpoint += `/${sortBy}/${sortOrder}`;
+    }
+    return this.http.get(endpoint).pipe(
+      tap(response => this.log(response)),
+      catchError(this.handleError('searchHistory()', {}))
+    );
+  }
+
+  insertHistory(history: {}) {
+    return this.http.post(`${url}/${api}/history`, history, httpOptions).pipe(
+      tap(_ => this.log(`inserted history`)),
+      catchError(this.handleError('insertHistory()'))
     );
   }
 

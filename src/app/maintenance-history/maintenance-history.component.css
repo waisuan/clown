@@ -23,3 +23,7 @@
 .cell-wrap-text {
     white-space: normal !important;
 }
+
+.no-underline-on-hover {
+    text-decoration: none;
+}
