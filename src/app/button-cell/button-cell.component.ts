@@ -15,8 +15,10 @@ export class ButtonCellComponent implements OnInit {
   constructor(private clownService: ClownService, private http: HttpClient, private router: Router) {}
 
   agInit(params) {
-    this.attachment_name = params['data']['attachment_name'];
-    this.attachment_id = params['data']['attachment'];
+    if (params['data']) {
+      this.attachment_name = params['data']['attachment_name'];
+      this.attachment_id = params['data']['attachment'];
+    }
   }
 
   ngOnInit() {}

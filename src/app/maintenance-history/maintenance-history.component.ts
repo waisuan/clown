@@ -202,7 +202,7 @@ export class MaintenanceHistoryComponent implements OnInit {
         this.numOfRecordsFetchedSoFar = 0;
       }
     } else {
-      if (this.sortBy && this.sortOrder) {;
+      if (this.sortBy && this.sortOrder) {
         this.sortBy = null;
         this.sortOrder = null;
         this.numOfRecordsFetchedSoFar = 0;

@@ -231,7 +231,7 @@ export class MachinesComponent implements OnInit {
         this.numOfMachinesFetchedSoFar = 0;
       }
     } else {
-      if (this.sortBy && this.sortOrder) {;
+      if (this.sortBy && this.sortOrder) {
         this.sortBy = null;
         this.sortOrder = null;
         this.numOfMachinesFetchedSoFar = 0;
