@@ -13,6 +13,8 @@ import { MachinesComponent } from './machines/machines.component';
 import { MaintenanceHistoryComponent } from './maintenance-history/maintenance-history.component';
 import { ButtonCellComponent } from './button-cell/button-cell.component';
 import { CheckboxCellComponent } from './checkbox-cell/checkbox-cell.component';
+import { LoginComponent } from './login/login.component';
+import { RegistrationComponent } from './registration/registration.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,9 @@ import { CheckboxCellComponent } from './checkbox-cell/checkbox-cell.component';
     MachinesComponent,
     MaintenanceHistoryComponent,
     ButtonCellComponent,
-    CheckboxCellComponent
+    CheckboxCellComponent,
+    LoginComponent,
+    RegistrationComponent
   ],
   imports: [
     BrowserModule,

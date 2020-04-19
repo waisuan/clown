@@ -108,35 +108,6 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.gridApi.setDatasource(this.dataSource);
   }
 
-  getRowHeight(params) {
-    return 28 * (Math.floor(params.data.actionTaken.length / 60) + 1);
-  };
-
-  setRowsHeight() {
-    let gridHeight = 0;
-
-    this.gridApi.forEachNode(node => {
-        let rowHeight = this.getRowHeight(node);
-
-        node.setRowHeight(rowHeight);
-        node.setRowTop(gridHeight);
-
-        gridHeight += rowHeight;
-    });
-
-    if (!gridHeight) {
-        return;
-    }
-
-    //this.gridApi.onRowHeightChanged();
-    //this.gridApi.rowHeight = gridHeight;
-
-    // let elements = this.el.nativeElement.getElementsByClassName('ag-body-container');
-    // if (elements) {
-    //   this.renderer.setElementStyle(elements[0], 'height', `${gridHeight}px`)
-    // }
-  }
-
   onRowDoubleClicked(params) {
     this.isInsert = false;
     this.currentRecord = sanitizeFormDataForRead(params['data']);
@@ -246,7 +217,6 @@ export class MaintenanceHistoryComponent implements OnInit {
       this.numOfRecordsFetchedSoFar += this.cacheBlockSize;
       params.successCallback(history, totalNumOfRecords);
       this.gridApi.sizeColumnsToFit();
-      //this.setRowsHeight();
     });
   }
 
@@ -281,11 +251,9 @@ export class MaintenanceHistoryComponent implements OnInit {
 
   insertHistory(history: {}) {
     this.clownService.insertHistory(history).subscribe(() => {
-      setTimeout(() => {
-        this.isSaving = false;
-        this.modalReference.close();
-        this.attachment = {}; 
-      }, 3000); // Xs delay
+      this.isSaving = false;
+      this.modalReference.close();
+      this.attachment = {}; 
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
@@ -294,11 +262,9 @@ export class MaintenanceHistoryComponent implements OnInit {
 
   updateHistory(id:string, newValues: {}) {
     this.clownService.updateHistory(id, newValues).subscribe(() => {
-      setTimeout(() => {
-        this.isSaving = false;
-        this.modalReference.close();
-        this.attachment = {}; 
-      }, 3000); // Xs delay
+      this.isSaving = false;
+      this.modalReference.close();
+      this.attachment = {};
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
@@ -309,11 +275,9 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.isDeleting = true;
     this.hasError = false;
     this.clownService.deleteHistory(id).subscribe(() => {
-      setTimeout(() => {
-        this.isDeleting = false;
-        this.modalReference.close();
-        this.attachment = {}; 
-      }, 3000); // Xs delay
+      this.isDeleting = false;
+      this.modalReference.close();
+      this.attachment = {}; 
     }, (err: Error) => {
       this.isDeleting = false;
       this.hasError = true;

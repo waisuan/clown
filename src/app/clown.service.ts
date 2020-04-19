@@ -4,12 +4,6 @@ import { catchError, tap, map } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { environment } from '../environments/environment';
 
-const httpOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-};
-const httpFormOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'multipart/form-data' })
-};
 const httpFileOptions = {
   responseType: 'blob' as 'blob',
   observe: 'response' as 'response'
@@ -21,9 +15,18 @@ const url = environment.apiUrl;
   providedIn: 'root'
 })
 export class ClownService {
+  redirectUrl = '/';
+
   constructor(private http: HttpClient) { }
 
-  getMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
+  getHttpOptions() {
+    return {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json',
+                                 'Authorization': 'Bearer ' + localStorage.getItem('authToken') })
+    };
+  }
+
+  getMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {    
     var endpoint = `${url}/${api}/machines`;
     if (limit != null) {
       endpoint += `/${limit}`;
@@ -34,7 +37,8 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint).pipe(
+
+    return this.http.get(endpoint, this.getHttpOptions()).pipe(
       tap(response => this.log(response)),
       catchError(this.handleError('getMachines()', {}))
     );
@@ -51,7 +55,7 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint).pipe(
+    return this.http.get(endpoint, this.getHttpOptions()).pipe(
       tap(response => this.log(response))
     );
   }
@@ -84,21 +88,21 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint).pipe(
+    return this.http.get(endpoint, this.getHttpOptions()).pipe(
       tap(response => this.log(response)),
       catchError(this.handleError('searchMachinesInBatches()', {}))
     );
   }
 
   insertMachine(machine: {}) {
-    return this.http.post(`${url}/${api}/machines`, machine, httpOptions).pipe(
+    return this.http.post(`${url}/${api}/machines`, machine, this.getHttpOptions()).pipe(
       tap(_ => this.log(`inserted machine`)),
       catchError(this.handleError('insertMachine()'))
     );
   }
 
   updateMachine(id: string, machine: {}) {
-    return this.http.put(`${url}/${api}/machines/${id}`, machine, httpOptions).pipe(
+    return this.http.put(`${url}/${api}/machines/${id}`, machine, this.getHttpOptions()).pipe(
       tap(_ => this.log(`updated machine=${id}`)),
       catchError(this.handleError('updateMachine()'))
     );
@@ -159,14 +163,14 @@ export class ClownService {
   }
 
   insertHistory(history: {}) {
-    return this.http.post(`${url}/${api}/history`, history, httpOptions).pipe(
+    return this.http.post(`${url}/${api}/history`, history, this.getHttpOptions()).pipe(
       tap(_ => this.log(`inserted history`)),
       catchError(this.handleError('insertHistory()'))
     );
   }
 
   updateHistory(id: string, newValues: {}) {
-    return this.http.put(`${url}/${api}/history/${id}`, newValues, httpOptions).pipe(
+    return this.http.put(`${url}/${api}/history/${id}`, newValues, this.getHttpOptions()).pipe(
       tap(_ => this.log(`updated history=${id}`)),
       catchError(this.handleError('updateHistory()'))
     );
@@ -177,6 +181,39 @@ export class ClownService {
       tap(_ => this.log(`deleted history=${id}`)),
       catchError(this.handleError('deleteHistory()'))
     );
+  }
+
+  register(credentials) {
+    return this.http.post(`${url}/${api}/user/create`, credentials).pipe(
+      catchError(this.handleError('login()'))
+    );
+  }
+
+  login(credentials) {
+    return this.http.post(`${url}/${api}/user/login`, credentials).pipe(
+      tap(token => {
+        localStorage.setItem('authToken', token['token']);
+      }),
+      catchError(this.handleError('login()'))
+    );
+  }
+
+  logout() {
+    localStorage.removeItem('authToken');
+  }
+
+  verify() {
+    return this.http.post(`${url}/${api}/user/verify`, {'token': localStorage.getItem('authToken')}).pipe(
+      catchError(this.handleError('verify()'))
+    );
+  }
+
+  isLoggedIn() {
+    return localStorage.getItem('authToken');
+  }
+
+  getAuthToken() {
+    return localStorage.getItem('authToken');
   }
 
   private log(msg: any) {
@@ -191,7 +228,6 @@ export class ClownService {
    */
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-
       // TODO: send the error to remote logging infrastructure
       console.error(error); // log to console instead
 

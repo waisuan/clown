@@ -55,6 +55,7 @@ export class MachinesComponent implements OnInit {
   private gridApi;
   private columnApi;
 
+  private ws;
   private numOfMachinesFetchedSoFar = 0;
   private sortBy = null;
   private sortOrder = null;
@@ -102,13 +103,12 @@ export class MachinesComponent implements OnInit {
         this.gridApi.setSortModel(null);
       });
 
-    var ws = new WebSocket(environment.machinesWebsocketUrl);
-    ws.onopen = () => {};
-    ws.onmessage = (received) => {
-        console.log(received.data);
-        if (received.data) {
-          this.dueMachinesCount = JSON.parse(received.data);
-        }
+    this.ws = new WebSocket(environment.machinesWebsocketUrl);
+    this.ws.onmessage = (received) => {
+      console.log("WebSocket - Received");
+      if (received.data) {
+        this.dueMachinesCount = JSON.parse(received.data);
+      }
     };
   }
 
@@ -253,6 +253,8 @@ export class MachinesComponent implements OnInit {
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
+    }, (err: any) => {
+      this.handleError(err);
     });
   }
 
@@ -263,6 +265,8 @@ export class MachinesComponent implements OnInit {
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
+    }, (err: any) => {
+      this.handleError(err);
     });
   }
 
@@ -273,6 +277,8 @@ export class MachinesComponent implements OnInit {
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
+    }, (err: any) => {
+      this.handleError(err);
     });
   }
 
@@ -307,11 +313,9 @@ export class MachinesComponent implements OnInit {
 
   insertMachine(machine: {}) {
     this.clownService.insertMachine(machine).subscribe(() => {
-      setTimeout(() => {
-        this.isSaving = false;
-        this.modalReference.close();
-        this.attachment = {}; 
-      }, 3000); // Xs delay
+      this.isSaving = false;
+      this.modalReference.close();
+      this.attachment = {}; 
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
@@ -320,11 +324,9 @@ export class MachinesComponent implements OnInit {
 
   updateMachine(id:string, machine: {}) {
     this.clownService.updateMachine(id, machine).subscribe(() => {
-      setTimeout(() => {
-        this.isSaving = false;
-        this.modalReference.close();
-        this.attachment = {}; 
-      }, 3000); // Xs delay
+      this.isSaving = false;
+      this.modalReference.close();
+      this.attachment = {}; 
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
@@ -335,14 +337,24 @@ export class MachinesComponent implements OnInit {
     this.isDeleting = true;
     this.hasError = false;
     this.clownService.deleteMachine(id).subscribe(() => {
-      setTimeout(() => {
-        this.isDeleting = false;
-        this.modalReference.close();
-        this.attachment = {}; 
-      }, 3000); // Xs delay
+      this.isDeleting = false;
+      this.modalReference.close();
+      this.attachment = {}; 
     }, (err: Error) => {
       this.isDeleting = false;
       this.hasError = true;
     });
+  }
+
+  logout() {
+    this.ws.close();
+    this.clownService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  handleError(err: any) {
+    if (err.status == 401) {
+      this.logout();
+    }
   }
 }

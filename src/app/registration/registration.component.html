@@ -1,0 +1,20 @@
+<div class="registration-body">
+  <form #registrationForm="ngForm" class="form-registration" (ngSubmit)="onSubmit()" novalidate>
+    <h1 class="h3 mb-3 font-weight-normal">Welcome!</h1>
+    <label for="username" class="sr-only">Username</label>
+    <input [(ngModel)]="username" name="username" type="username" id="username" class="form-control" placeholder="Username" required autofocus>
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input [(ngModel)]="password" name="password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+    <label for="email" class="sr-only">E-mail</label>
+    <input [(ngModel)]="email" name="email" type="email" id="email" class="form-control" placeholder="E-mail" required autofocus>
+    <button class="btn btn-lg btn-primary btn-block" type="submit" [disabled]="isRegistering">
+      <span *ngIf="!isRegistering"><i class="fas fa-user"></i> </span>
+      <span *ngIf="isRegistering"><i class="spinner-grow spinner-grow-sm"></i></span>
+      Register
+    </button>
+  
+    <ngb-alert style="margin-top: 5px;" class="animated shake" type="danger" [dismissible]="false" *ngIf="failedRegistration">
+      Does username already exist?
+    </ngb-alert>
+  </form>
+</div>
