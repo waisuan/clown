@@ -352,6 +352,36 @@ export class MachinesComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
+  downloadToCsv() {
+    this.clownService.getMachines().subscribe(response => {
+      var machines = response['data'];
+
+      var csvString = [];
+      var need_headers = true;
+      machines.forEach(machine => {
+        var tmp = [];
+        var headers = [];
+        for (var key in machine) {
+          headers.push(key);
+          tmp.push('"' + machine[key] + '"');
+        }
+        
+        if (need_headers) {
+          csvString.push(headers.join(','));
+          need_headers = false;
+        }
+
+        csvString.push(tmp.join(','))
+      });
+      
+      var now = new Date().toISOString().substring(0,19).replace(/T|-|:/g,"");
+      var blob = new Blob([csvString.join('\r\n')], {type: 'text/csv' });
+      FileSaver.saveAs(blob, "machines_" + now + ".csv");
+    }, (err: any) => {
+      this.handleError(err);
+    });
+  }
+
   handleError(err: any) {
     if (err.status == 401) {
       this.logout();

@@ -33,6 +33,7 @@
           <span class="badge badge-pill badge-light">{{selectedMachineHistoryCount}}</span>
         </button> 
         <button type="button" class="btn btn-success" ngbTooltip="+ New machine" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
+        <button type="button" class="btn btn-dark" ngbTooltip="Download to CSV" (click)="downloadToCsv()"><i class="fas fa-file-excel"></i></button>
     </div>
   </div>
   <ag-grid-angular #agGrid 
