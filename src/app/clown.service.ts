@@ -113,7 +113,7 @@ export class ClownService {
     if (!file) {
       return of(null);
     }
-    return this.http.put(`${url}/${api}/attachment/${id}`, file, this.getHttpOptions()).pipe(
+    return this.http.put(`${url}/${api}/attachment/${id}`, file).pipe(
       catchError(this.handleError('insertAttachment()'))
     );
   }
