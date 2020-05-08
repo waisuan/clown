@@ -8,7 +8,6 @@ import { NgbModal, ModalDismissReasons, NgbDateParserFormatter, NgbModalRef } fr
 import * as FileSaver from 'file-saver';
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter';
 import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
-import { environment } from '../../environments/environment';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonCellComponent } from '../button-cell/button-cell.component';
 

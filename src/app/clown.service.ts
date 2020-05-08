@@ -39,7 +39,6 @@ export class ClownService {
     }
 
     return this.http.get(endpoint, this.getHttpOptions()).pipe(
-      tap(response => this.log(response)),
       catchError(this.handleError('getMachines()', {}))
     );
   }
@@ -56,7 +55,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint, this.getHttpOptions()).pipe(
-      tap(response => this.log(response))
+      catchError(this.handleError('getDueMachines()', {}))
     );
   }
 
@@ -69,7 +68,6 @@ export class ClownService {
         var fileName = result.replace(/"/g, '');
         return { fileName: fileName, blob: response.body };
       }),
-      tap(response => this.log(response)),
       catchError(this.handleError('getAttachment()', {}))
     );
   }
@@ -89,28 +87,24 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint, this.getHttpOptions()).pipe(
-      tap(response => this.log(response)),
       catchError(this.handleError('searchMachinesInBatches()', {}))
     );
   }
 
   insertMachine(machine: {}) {
     return this.http.post(`${url}/${api}/machines`, machine, this.getHttpOptions()).pipe(
-      tap(_ => this.log(`inserted machine`)),
       catchError(this.handleError('insertMachine()'))
     );
   }
 
   updateMachine(id: string, machine: {}) {
     return this.http.put(`${url}/${api}/machines/${id}`, machine, this.getHttpOptions()).pipe(
-      tap(_ => this.log(`updated machine=${id}`)),
       catchError(this.handleError('updateMachine()'))
     );
   }
 
   deleteMachine(id: string) {
-    return this.http.delete(`${url}/${api}/machines/${id}`).pipe(
-      tap(_ => this.log(`deleted machine=${id}`)),
+    return this.http.delete(`${url}/${api}/machines/${id}`, this.getHttpOptions()).pipe(
       catchError(this.handleError('deleteMachine()'))
     );
   }
@@ -119,8 +113,7 @@ export class ClownService {
     if (!file) {
       return of(null);
     }
-    return this.http.put(`${url}/${api}/attachment/${id}`, file).pipe(
-      tap(_ => this.log(`updated attachment=${id}`)),
+    return this.http.put(`${url}/${api}/attachment/${id}`, file, this.getHttpOptions()).pipe(
       catchError(this.handleError('insertAttachment()'))
     );
   }
@@ -136,8 +129,7 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint).pipe(
-      tap(response => this.log(response)),
+    return this.http.get(endpoint, this.getHttpOptions()).pipe(
       catchError(this.handleError('getHistory()', {}))
     );
   }
@@ -156,29 +148,25 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint).pipe(
-      tap(response => this.log(response)),
+    return this.http.get(endpoint, this.getHttpOptions()).pipe(
       catchError(this.handleError('searchHistory()', {}))
     );
   }
 
   insertHistory(history: {}) {
     return this.http.post(`${url}/${api}/history`, history, this.getHttpOptions()).pipe(
-      tap(_ => this.log(`inserted history`)),
       catchError(this.handleError('insertHistory()'))
     );
   }
 
   updateHistory(id: string, newValues: {}) {
     return this.http.put(`${url}/${api}/history/${id}`, newValues, this.getHttpOptions()).pipe(
-      tap(_ => this.log(`updated history=${id}`)),
       catchError(this.handleError('updateHistory()'))
     );
   }
 
   deleteHistory(id: string) {
-    return this.http.delete(`${url}/${api}/history/${id}`).pipe(
-      tap(_ => this.log(`deleted history=${id}`)),
+    return this.http.delete(`${url}/${api}/history/${id}`, this.getHttpOptions()).pipe(
       catchError(this.handleError('deleteHistory()'))
     );
   }
@@ -202,17 +190,7 @@ export class ClownService {
     localStorage.removeItem('authToken');
   }
 
-  verify() {
-    return this.http.post(`${url}/${api}/user/verify`, {'token': localStorage.getItem('authToken')}).pipe(
-      catchError(this.handleError('verify()'))
-    );
-  }
-
   isLoggedIn() {
-    return localStorage.getItem('authToken');
-  }
-
-  getAuthToken() {
     return localStorage.getItem('authToken');
   }
 
@@ -228,10 +206,8 @@ export class ClownService {
    */
   private handleError<T>(operation = 'operation', result?: T) {
     return (error: any): Observable<T> => {
-      // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
+      console.error(error);
 
-      // TODO: better job of transforming error for user consumption
       this.log(`${operation} failed: ${error.message}`);
 
       // Let the app keep running by returning an empty result.
