@@ -119,13 +119,13 @@ export class MachinesComponent implements OnInit {
   }
 
   onGridReady(params) {
-    this.spinner.show();
-
     this.gridApi = params.api;
     this.columnApi = params.columnApi;
 
     this.dataSource = {
       getRows: (params: IGetRowsParams) => {
+        this.spinner.show();
+
         this.refreshSortModel(params.sortModel);
         if (this.showDueMachinesOnly) {
           this.getDueMachines(params);
@@ -275,6 +275,8 @@ export class MachinesComponent implements OnInit {
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
+
+      this.spinner.hide();
     }, (err: any) => {
       this.handleError(err);
     });
@@ -287,6 +289,8 @@ export class MachinesComponent implements OnInit {
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
+
+      this.spinner.hide();
     }, (err: any) => {
       this.handleError(err);
     });
