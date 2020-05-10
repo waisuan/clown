@@ -4,10 +4,6 @@ import { catchError, tap, map } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { environment } from '../environments/environment';
 
-const httpFileOptions = {
-  responseType: 'blob' as 'blob',
-  observe: 'response' as 'response'
-}
 const api = 'clown-api';
 const url = environment.apiUrl;
 
@@ -21,8 +17,15 @@ export class ClownService {
 
   getHttpOptions() {
     return {
-      headers: new HttpHeaders({ 'Content-Type': 'application/json',
-                                 'Authorization': 'Bearer ' + localStorage.getItem('authToken') })
+      headers: new HttpHeaders({ 'Authorization': 'Bearer ' + localStorage.getItem('authToken') })
+    };
+  }
+
+  getHttpFileOptions() {
+    return {
+      headers: new HttpHeaders({ 'Authorization': 'Bearer ' + localStorage.getItem('authToken') }),
+      responseType: 'blob' as 'blob',
+      observe: 'response' as 'response'
     };
   }
 
@@ -61,7 +64,7 @@ export class ClownService {
 
   getAttachment(id: string) {
     var endpoint = `${url}/${api}/attachment/${id}`;
-    return this.http.get(endpoint, httpFileOptions).pipe(
+    return this.http.get(endpoint, this.getHttpFileOptions()).pipe(
       map(response => {
         var contentDispositionHeader = response.headers.get('Content-Disposition');
         var result = contentDispositionHeader.split(';')[1].trim().split('=')[1];
@@ -113,7 +116,7 @@ export class ClownService {
     if (!file) {
       return of(null);
     }
-    return this.http.put(`${url}/${api}/attachment/${id}`, file).pipe(
+    return this.http.put(`${url}/${api}/attachment/${id}`, file, this.getHttpOptions()).pipe(
       catchError(this.handleError('insertAttachment()'))
     );
   }
