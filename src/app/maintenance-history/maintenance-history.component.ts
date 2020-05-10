@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { ClownService } from '../clown.service';
-import { AgGridNg2 } from 'ag-grid-angular';
 import { IDatasource, IGetRowsParams } from 'ag-grid-community';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
@@ -9,6 +8,7 @@ import * as FileSaver from 'file-saver';
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter';
 import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite } from '../util/Elves';
 import { ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { ButtonCellComponent } from '../button-cell/button-cell.component';
 
 @Component({
@@ -64,7 +64,12 @@ export class MaintenanceHistoryComponent implements OnInit {
   @Input() attachment = {};
   @Input() machineId: string;
 
-  constructor(private clownService: ClownService, private modalService: NgbModal, private route: ActivatedRoute) {}
+  constructor(
+    private clownService: ClownService, 
+    private modalService: NgbModal, 
+    private router: Router, 
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.searchTerms.pipe(
@@ -206,6 +211,8 @@ export class MaintenanceHistoryComponent implements OnInit {
   getAttachment(id: string) {
     this.clownService.getAttachment(id).subscribe(response => {
       FileSaver.saveAs(response['blob'], response['fileName']);
+    }, (err: any) => {
+      this.handleError(err);
     });
   }
 
@@ -216,6 +223,8 @@ export class MaintenanceHistoryComponent implements OnInit {
       this.numOfRecordsFetchedSoFar += this.cacheBlockSize;
       params.successCallback(history, totalNumOfRecords);
       this.gridApi.sizeColumnsToFit();
+    }, (err: any) => {
+      this.handleError(err);
     });
   }
 
@@ -226,6 +235,8 @@ export class MaintenanceHistoryComponent implements OnInit {
       this.numOfRecordsFetchedSoFar += this.cacheBlockSize;
       params.successCallback(history, totalNumOfRecords);
       this.gridApi.sizeColumnsToFit();
+    }, (err: any) => {
+      this.handleError(err);
     });
   }
 
@@ -256,6 +267,7 @@ export class MaintenanceHistoryComponent implements OnInit {
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
+      this.handleError(err);
     });
   }
 
@@ -267,6 +279,7 @@ export class MaintenanceHistoryComponent implements OnInit {
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
+      this.handleError(err);
     });
   }
 
@@ -280,6 +293,7 @@ export class MaintenanceHistoryComponent implements OnInit {
     }, (err: Error) => {
       this.isDeleting = false;
       this.hasError = true;
+      this.handleError(err);
     });
   }
 
@@ -287,10 +301,14 @@ export class MaintenanceHistoryComponent implements OnInit {
     if (!this.isFilterOn) {
       this.clownService.getHistory(this.machineId).subscribe(response => {
         this.createCsvFile(response['data']);
+      }, (err: any) => {
+        this.handleError(err);
       });
     } else {
       this.clownService.searchHistory(this.machineId, this.searchTerm).subscribe(response => {
         this.createCsvFile(response['data']);
+      }, (err: any) => {
+        this.handleError(err);
       });
     }
   }
@@ -321,6 +339,17 @@ export class MaintenanceHistoryComponent implements OnInit {
     var now = new Date().toISOString().substring(0,19).replace(/T|-|:/g,"");
     var blob = new Blob([csvString.join('\r\n')], {type: 'text/csv' });
     FileSaver.saveAs(blob, "maintenance_" + now + ".csv");
+  }
+
+  logout() {
+    this.clownService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  handleError(err: any) {
+    if (err.status == 401) {
+      this.logout();
+    }
   }
 
   ngOnDestroy() {

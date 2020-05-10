@@ -299,6 +299,8 @@ export class MachinesComponent implements OnInit {
   getAttachment(id: string) {
     this.clownService.getAttachment(id).subscribe(response => {
       FileSaver.saveAs(response['blob'], response['fileName']);
+    }, (err: any) => {
+      this.handleError(err);
     });
   }
 
@@ -333,6 +335,7 @@ export class MachinesComponent implements OnInit {
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
+      this.handleError(err);
     });
   }
 
@@ -344,6 +347,7 @@ export class MachinesComponent implements OnInit {
     }, (err: Error) => {
       this.isSaving = false;
       this.hasError = true;
+      this.handleError(err);
     });
   }
 
@@ -357,6 +361,7 @@ export class MachinesComponent implements OnInit {
     }, (err: Error) => {
       this.isDeleting = false;
       this.hasError = true;
+      this.handleError(err);
     });
   }
 
