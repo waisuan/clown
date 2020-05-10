@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 
 import { AgGridModule } from 'ag-grid-angular';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerModule } from 'ngx-spinner';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -31,7 +32,8 @@ import { RegistrationComponent } from './registration/registration.component';
     FormsModule,
     AgGridModule.withComponents([]),
     HttpClientModule,
-    NgbModule
+    NgbModule,
+    NgxSpinnerModule
   ],
   providers: [],
   entryComponents: [ButtonCellComponent, CheckboxCellComponent],

@@ -12,6 +12,7 @@ import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 import { ButtonCellComponent } from '../button-cell/button-cell.component';
 import { CheckboxCellComponent } from '../checkbox-cell/checkbox-cell.component';
+import { NgxSpinnerService } from "ngx-spinner";
 
 @Component({
   selector: 'app-machines',
@@ -82,7 +83,12 @@ export class MachinesComponent implements OnInit {
   @Input() selectedMachine;
   @Input() selectedMachineHistoryCount = 0;
 
-  constructor(private clownService: ClownService, private modalService: NgbModal, private router: Router) { }
+  constructor(
+    private clownService: ClownService, 
+    private modalService: NgbModal, 
+    private router: Router, 
+    private spinner: NgxSpinnerService
+  ) { }
 
   ngOnInit() {
     this.searchTerms.pipe(
@@ -113,6 +119,8 @@ export class MachinesComponent implements OnInit {
   }
 
   onGridReady(params) {
+    this.spinner.show();
+
     this.gridApi = params.api;
     this.columnApi = params.columnApi;
 
@@ -253,6 +261,8 @@ export class MachinesComponent implements OnInit {
       this.numOfMachinesFetchedSoFar += this.cacheBlockSize;
       params.successCallback(machines, totalNumOfMachines);
       this.gridApi.sizeColumnsToFit();
+
+      this.spinner.hide();
     }, (err: any) => {
       this.handleError(err);
     });
