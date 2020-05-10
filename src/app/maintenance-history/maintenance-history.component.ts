@@ -296,6 +296,10 @@ export class MaintenanceHistoryComponent implements OnInit {
   }
 
   createCsvFile(history) {
+    if(history.length == 0) {
+      return;
+    }
+
     var csvString = [];
     var need_headers = true;
     history.forEach(hist => {
