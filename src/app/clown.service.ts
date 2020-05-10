@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { catchError, tap, map } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { environment } from '../environments/environment';
@@ -15,15 +15,8 @@ export class ClownService {
 
   constructor(private http: HttpClient) { }
 
-  getHttpOptions() {
-    return {
-      headers: new HttpHeaders({ 'Authorization': 'Bearer ' + localStorage.getItem('authToken') })
-    };
-  }
-
   getHttpFileOptions() {
     return {
-      headers: new HttpHeaders({ 'Authorization': 'Bearer ' + localStorage.getItem('authToken') }),
       responseType: 'blob' as 'blob',
       observe: 'response' as 'response'
     };
@@ -41,7 +34,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
 
-    return this.http.get(endpoint, this.getHttpOptions()).pipe(
+    return this.http.get(endpoint).pipe(
       catchError(this.handleError('getMachines()', {}))
     );
   }
@@ -57,7 +50,7 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint, this.getHttpOptions()).pipe(
+    return this.http.get(endpoint).pipe(
       catchError(this.handleError('getDueMachines()', {}))
     );
   }
@@ -89,25 +82,25 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint, this.getHttpOptions()).pipe(
+    return this.http.get(endpoint).pipe(
       catchError(this.handleError('searchMachinesInBatches()', {}))
     );
   }
 
   insertMachine(machine: {}) {
-    return this.http.post(`${url}/${api}/machines`, machine, this.getHttpOptions()).pipe(
+    return this.http.post(`${url}/${api}/machines`, machine).pipe(
       catchError(this.handleError('insertMachine()'))
     );
   }
 
   updateMachine(id: string, machine: {}) {
-    return this.http.put(`${url}/${api}/machines/${id}`, machine, this.getHttpOptions()).pipe(
+    return this.http.put(`${url}/${api}/machines/${id}`, machine).pipe(
       catchError(this.handleError('updateMachine()'))
     );
   }
 
   deleteMachine(id: string) {
-    return this.http.delete(`${url}/${api}/machines/${id}`, this.getHttpOptions()).pipe(
+    return this.http.delete(`${url}/${api}/machines/${id}`).pipe(
       catchError(this.handleError('deleteMachine()'))
     );
   }
@@ -116,7 +109,7 @@ export class ClownService {
     if (!file) {
       return of(null);
     }
-    return this.http.put(`${url}/${api}/attachment/${id}`, file, this.getHttpOptions()).pipe(
+    return this.http.put(`${url}/${api}/attachment/${id}`, file).pipe(
       catchError(this.handleError('insertAttachment()'))
     );
   }
@@ -132,7 +125,7 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint, this.getHttpOptions()).pipe(
+    return this.http.get(endpoint).pipe(
       catchError(this.handleError('getHistory()', {}))
     );
   }
@@ -151,25 +144,25 @@ export class ClownService {
     if (sortBy != null && sortOrder != null) {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
-    return this.http.get(endpoint, this.getHttpOptions()).pipe(
+    return this.http.get(endpoint).pipe(
       catchError(this.handleError('searchHistory()', {}))
     );
   }
 
   insertHistory(history: {}) {
-    return this.http.post(`${url}/${api}/history`, history, this.getHttpOptions()).pipe(
+    return this.http.post(`${url}/${api}/history`, history).pipe(
       catchError(this.handleError('insertHistory()'))
     );
   }
 
   updateHistory(id: string, newValues: {}) {
-    return this.http.put(`${url}/${api}/history/${id}`, newValues, this.getHttpOptions()).pipe(
+    return this.http.put(`${url}/${api}/history/${id}`, newValues).pipe(
       catchError(this.handleError('updateHistory()'))
     );
   }
 
   deleteHistory(id: string) {
-    return this.http.delete(`${url}/${api}/history/${id}`, this.getHttpOptions()).pipe(
+    return this.http.delete(`${url}/${api}/history/${id}`).pipe(
       catchError(this.handleError('deleteHistory()'))
     );
   }
@@ -182,19 +175,34 @@ export class ClownService {
 
   login(credentials) {
     return this.http.post(`${url}/${api}/user/login`, credentials).pipe(
-      tap(token => {
-        localStorage.setItem('authToken', token['token']);
+      tap(response => {
+        localStorage.setItem('authToken', response['token']);
+        localStorage.setItem('user', credentials['username']);
       }),
       catchError(this.handleError('login()'))
     );
   }
 
+  extendUserSession() {
+    var currentUser = localStorage.getItem('user');
+    return this.http.post(`${url}/${api}/user/extend/${currentUser}`, {}).pipe(
+      tap(response => {
+        var new_token = response['token'];
+        if (new_token != localStorage.getItem('authToken')) {
+          localStorage.setItem('authToken', response['token']);
+        }
+      }),
+      catchError(this.handleError('extendUserSession()'))
+    )
+  }
+
   logout() {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
   }
 
   isLoggedIn() {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('authToken') && localStorage.getItem('user');
   }
 
   private log(msg: any) {
