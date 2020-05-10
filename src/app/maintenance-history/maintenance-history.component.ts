@@ -284,31 +284,39 @@ export class MaintenanceHistoryComponent implements OnInit {
   }
 
   downloadToCsv() {
-    this.clownService.getHistory(this.machineId).subscribe(response => {
-      var history = response['data'];
-
-      var csvString = [];
-      var need_headers = true;
-      history.forEach(hist => {
-        var tmp = [];
-        var headers = [];
-        for (var key in hist) {
-          headers.push(key);
-          tmp.push('"' + hist[key] + '"');
-        }
-
-        if (need_headers) {
-          csvString.push(headers.join(','));
-          need_headers = false;
-        }
-
-        csvString.push(tmp.join(','))
+    if (!this.isFilterOn) {
+      this.clownService.getHistory(this.machineId).subscribe(response => {
+        this.createCsvFile(response['data']);
       });
-      
-      var now = new Date().toISOString().substring(0,19).replace(/T|-|:/g,"");
-      var blob = new Blob([csvString.join('\r\n')], {type: 'text/csv' });
-      FileSaver.saveAs(blob, "maintenance_" + now + ".csv");
+    } else {
+      this.clownService.searchHistory(this.machineId, this.searchTerm).subscribe(response => {
+        this.createCsvFile(response['data']);
+      });
+    }
+  }
+
+  createCsvFile(history) {
+    var csvString = [];
+    var need_headers = true;
+    history.forEach(hist => {
+      var tmp = [];
+      var headers = [];
+      for (var key in hist) {
+        headers.push(key);
+        tmp.push('"' + hist[key] + '"');
+      }
+
+      if (need_headers) {
+        csvString.push(headers.join(','));
+        need_headers = false;
+      }
+
+      csvString.push(tmp.join(','))
     });
+    
+    var now = new Date().toISOString().substring(0,19).replace(/T|-|:/g,"");
+    var blob = new Blob([csvString.join('\r\n')], {type: 'text/csv' });
+    FileSaver.saveAs(blob, "maintenance_" + now + ".csv");
   }
 
   ngOnDestroy() {
