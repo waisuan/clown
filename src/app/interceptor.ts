@@ -10,12 +10,12 @@ export class Interceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(this.addToken(request)).pipe(catchError(error => {
-        if (error.status == 401) {
+        if (this.clownService.isLoggedIn() && error.status == 401) {
             return this.clownService.extendUserSession().pipe(
                 switchMap(() => {
                     return next.handle(this.addToken(request));
-                }
-            ));
+                })
+            );
         } else {
             return throwError(error);
         }

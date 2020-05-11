@@ -35,7 +35,7 @@ export class ClownService {
     }
 
     return this.http.get(endpoint).pipe(
-      catchError(this.handleError('getMachines()', {}))
+      catchError(this.handleError('getMachines()'))
     );
   }
 
@@ -51,7 +51,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint).pipe(
-      catchError(this.handleError('getDueMachines()', {}))
+      catchError(this.handleError('getDueMachines()'))
     );
   }
 
@@ -64,7 +64,7 @@ export class ClownService {
         var fileName = result.replace(/"/g, '');
         return { fileName: fileName, blob: response.body };
       }),
-      catchError(this.handleError('getAttachment()', {}))
+      catchError(this.handleError('getAttachment()'))
     );
   }
 
@@ -83,7 +83,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint).pipe(
-      catchError(this.handleError('searchMachinesInBatches()', {}))
+      catchError(this.handleError('searchMachinesInBatches()'))
     );
   }
 
@@ -126,7 +126,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint).pipe(
-      catchError(this.handleError('getHistory()', {}))
+      catchError(this.handleError('getHistory()'))
     );
   }
 
@@ -145,7 +145,7 @@ export class ClownService {
       endpoint += `/${sortBy}/${sortOrder}`;
     }
     return this.http.get(endpoint).pipe(
-      catchError(this.handleError('searchHistory()', {}))
+      catchError(this.handleError('searchHistory()'))
     );
   }
 
@@ -187,9 +187,10 @@ export class ClownService {
     var currentUser = localStorage.getItem('user');
     return this.http.post(`${url}/${api}/user/extend/${currentUser}`, {}).pipe(
       tap(response => {
-        var new_token = response['token'];
-        if (new_token != localStorage.getItem('authToken')) {
+        if ('token' in response) {
           localStorage.setItem('authToken', response['token']);
+        } else {
+          this.logout();
         }
       }),
       catchError(this.handleError('extendUserSession()'))
@@ -215,7 +216,7 @@ export class ClownService {
    * @param operation - name of the operation that failed
    * @param result - optional value to return as the observable result
    */
-  private handleError<T>(operation = 'operation', result?: T) {
+  private handleError<T>(operation = 'operation') {
     return (error: any): Observable<T> => {
       console.error(error);
 
