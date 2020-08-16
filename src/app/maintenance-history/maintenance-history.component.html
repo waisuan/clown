@@ -73,12 +73,12 @@
       </div>
       <div class="form-group">
         <input hidden type="file" #uploader (change)="uploadFile($event)"/>
-        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentRecord.attachment_name" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
+        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentRecord.attachment" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
           <i class="fas fa-file-upload"></i> {{attachment.filename || "Upload a file..."}}
         </button>
-        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentRecord.attachment_name">
+        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentRecord.attachment">
           <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
-            {{currentRecord.attachment_name}}
+            {{currentRecord.attachment}}
           </button>
           <div ngbDropdownMenu aria-labelledby="fileDropdown">
             <button type="button" (click)="downloadFile()" ngbDropdownItem><i class="fas fa-file-download"></i> Download</button>
@@ -91,10 +91,10 @@
     <div class="modal-footer">
       <div class="mr-auto" *ngIf="!isInsert">
         <div class="row" class="ml-auto">
-          <small>Created on: {{currentRecord.dateOfCreation}}</small>
+          <small>Created on: {{currentRecord.createdAt}}</small>
         </div>
         <div class="row" class="ml-auto">
-          <small style="color: blue">Updated on: {{currentRecord.lastUpdated}}</small>
+          <small style="color: blue">Updated on: {{currentRecord.updatedAt}}</small>
         </div>    
       </div>
       <small *ngIf="hasError" style="color: red">Oops! Something went wrong. Please refresh this page and try again.</small>

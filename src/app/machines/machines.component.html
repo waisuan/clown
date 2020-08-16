@@ -20,19 +20,19 @@
           <div ngbDropdownMenu aria-labelledby="dueMachinesNotify">
               <div class="btn-group btn-group-toggle" ngbDropdownItem>
                 <label class="btn-outline-primary" ngbButtonLabel>
-                  <input type="checkbox" ngbButton (click)="onShowDueMachines('almostDue')"> Show almost due
+                  <input type="checkbox" ngbButton (click)="onShowDueMachines('almost_due')"> Show almost due
                 </label>
                 <label class="btn-outline-primary" ngbButtonLabel>
                   <input type="checkbox" ngbButton (click)="onShowDueMachines('due')"> Show due
                 </label>
                 <label class="btn-outline-primary" ngbButtonLabel>
-                  <input type="checkbox" ngbButton (click)="onShowDueMachines('overDue')"> Show overdue
+                  <input type="checkbox" ngbButton (click)="onShowDueMachines('overdue')"> Show overdue
                 </label>
               </div>
           </div>
         </div>
         <button type="button" class="btn btn-info" ngbTooltip="Show history" (click)="showHistory()" [disabled]="!selectedMachine">
-          <span class="badge badge-pill badge-light">{{selectedMachineHistoryCount}}</span>
+          <span><i class="fas fa-history"></i></span>
         </button> 
         <button type="button" class="btn btn-success" ngbTooltip="+ New machine" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
         <button type="button" class="btn btn-dark" ngbTooltip="Download to CSV" (click)="downloadToCsv()"><i class="fas fa-file-excel"></i></button>
@@ -136,12 +136,12 @@
       </div>
       <div class="form-group">
         <input hidden type="file" #uploader (change)="uploadFile($event)"/>
-        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentMachine.attachment_name" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
+        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentMachine.attachment" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
           <i class="fas fa-file-upload"></i> {{attachment.filename || "Upload a file..."}}
         </button>
-        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentMachine.attachment_name">
+        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentMachine.attachment">
           <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
-            {{currentMachine.attachment_name}}
+            {{currentMachine.attachment}}
           </button>
           <div ngbDropdownMenu aria-labelledby="fileDropdown">
             <button type="button" (click)="downloadFile()" ngbDropdownItem><i class="fas fa-file-download"></i> Download</button>
@@ -154,10 +154,10 @@
     <div class="modal-footer">
       <div class="mr-auto" *ngIf="!isInsert">
         <div class="row" class="ml-auto">
-          <small>Created on: {{currentMachine.dateOfCreation}}</small>
+          <small>Created on: {{currentMachine.createdAt}}</small>
         </div>
         <div class="row" class="ml-auto">
-          <small style="color: blue">Updated on: {{currentMachine.lastUpdated}}</small>
+          <small style="color: blue">Updated on: {{currentMachine.updatedAt}}</small>
         </div>    
       </div>
       <small *ngIf="hasError" style="color: red">Oops! Something went wrong. Please refresh this page and try again.</small>
