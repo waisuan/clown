@@ -125,8 +125,6 @@ export class MachinesComponent implements OnInit {
 
     this.dataSource = {
       getRows: (params: IGetRowsParams) => {
-        this.spinner.show()
-
         this.refreshSortModel(params.sortModel)
         if (this.showDueMachinesOnly) {
           this.getDueMachines(params)
@@ -253,6 +251,7 @@ export class MachinesComponent implements OnInit {
   }
 
   getMachines(params: IGetRowsParams) {
+    this.spinner.show()
     this.clownService.getMachines(this.cacheBlockSize, params.startRow, this.sortBy, this.sortOrder).subscribe(response => {
       var machines: any = response['data']
       var totalNumOfMachines: any = response['count']
@@ -271,14 +270,13 @@ export class MachinesComponent implements OnInit {
       var totalNumOfMachines: any = response['count']
       params.successCallback(machines, totalNumOfMachines)
       this.gridApi.sizeColumnsToFit()
-
-      this.spinner.hide()
     }, (err: any) => {
       this.handleError(err)
     })
   }
 
   getDueMachines(params: IGetRowsParams) {
+    this.spinner.show()
     this.clownService.getDueMachines().subscribe(response => {
       var machines = (response as Array<any>)
         .filter(machine => this.showDueMachineStatus.indexOf(machine.ppmStatus) !== -1)
