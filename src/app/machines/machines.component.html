@@ -2,12 +2,16 @@
 
 <div class="clown-main">
   <div>
-    <h6><a href='javascript: void(0);' (click)='logout()' class="no-underline-on-hover"><i class="fas fa-sign-out-alt"></i> Logout</a></h6>
+    <h6>
+      <a href='javascript: void(0);' (click)='logout()' class="no-underline-on-hover"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      | <a href="{{apiUrl}}/admin" class="no-underline-on-hover"><i class="fas fa-user-cog"></i> Admin</a>
+    </h6>
   </div>
   <div class="clown-main-actions fixed">
     <div class="input-group col-4">
         <div class="input-group-prepend">
-          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <span class="input-group-text" *ngIf="!isSearching"><i class="fas fa-search"></i></span>
+          <span class="input-group-text" *ngIf="isSearching"><i class="fas fa-spinner fa-pulse"></i></span>
         </div>
         <input #searchMachinesBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchMachines(searchMachinesBox.value)">
         <button type="button" class="btn btn-warning" ngbTooltip="You have {{dueMachinesCount}} machines due" *ngIf="dueMachinesCount == 0">
@@ -35,7 +39,10 @@
           <span><i class="fas fa-history"></i></span>
         </button> 
         <button type="button" class="btn btn-success" ngbTooltip="+ New machine" (click)="insertMachineModal()"><i class="fas fa-plus"></i></button>
-        <button type="button" class="btn btn-dark" ngbTooltip="Download to CSV" (click)="downloadToCsv()"><i class="fas fa-file-excel"></i></button>
+        <button type="button" class="btn btn-dark" ngbTooltip="Download to CSV" (click)="downloadToCsv()">
+          <i class="fas fa-file-excel" *ngIf="!this.isDownloadingCsv"></i>
+          <i class="fas fa-spinner fa-pulse" *ngIf="this.isDownloadingCsv"></i>
+        </button>
     </div>
   </div>
   <ag-grid-angular #agGrid 

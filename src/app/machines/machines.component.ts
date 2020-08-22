@@ -59,7 +59,6 @@ export class MachinesComponent implements OnInit {
   private columnApi
 
   private ws
-  private numOfMachinesFetchedSoFar = 0
   private sortBy = null
   private sortOrder = null
   private isFilterOn = false
@@ -83,6 +82,9 @@ export class MachinesComponent implements OnInit {
   @Input() attachment = {}
   @Input() dueMachinesCount = 0
   @Input() selectedMachine
+  isSearching = false
+  isDownloadingCsv = false
+  apiUrl = environment.apiUrl
 
   constructor(
     private clownService: ClownService, 
@@ -217,11 +219,9 @@ export class MachinesComponent implements OnInit {
     if (this.fullRefresh) {
       this.sortBy = null
       this.sortOrder = null
-      this.numOfMachinesFetchedSoFar = 0
       this.fullRefresh = false
       return
     } else if (this.miniRefresh) {
-      this.numOfMachinesFetchedSoFar = 0
       this.miniRefresh = false
       return
     }
@@ -232,13 +232,11 @@ export class MachinesComponent implements OnInit {
       if (newSortCol != this.sortBy || newSortOrder != this.sortOrder) {
         this.sortBy = newSortCol
         this.sortOrder = newSortOrder
-        this.numOfMachinesFetchedSoFar = 0
       }
     } else {
       if (this.sortBy && this.sortOrder) {
         this.sortBy = null
         this.sortOrder = null
-        this.numOfMachinesFetchedSoFar = 0
       }
     }
   }
@@ -265,11 +263,14 @@ export class MachinesComponent implements OnInit {
   }
 
   getMachinesThroughSearch(params: IGetRowsParams) {
+    this.isSearching = true
     this.clownService.searchMachines(this.searchTerm, this.cacheBlockSize, params.startRow, this.sortBy, this.sortOrder).subscribe(response => {
       var machines: any = response['data']
       var totalNumOfMachines: any = response['count']
       params.successCallback(machines, totalNumOfMachines)
       this.gridApi.sizeColumnsToFit()
+
+      this.isSearching = false
     }, (err: any) => {
       this.handleError(err)
     })
@@ -364,28 +365,34 @@ export class MachinesComponent implements OnInit {
   }
 
   logout() {
+    this.spinner.show()
     this.ws.close()
     this.clownService.logout().subscribe(_ => {
+      this.spinner.hide()
       this.router.navigate(['/login'])
     })
   }
 
   downloadToCsv() {
+    this.isDownloadingCsv = true
     if (this.showDueMachinesOnly) {
       this.clownService.getDueMachines().subscribe(response => {
         this.createCsvFile(response['data'])
+        this.isDownloadingCsv = false
       }, (err: any) => {
         this.handleError(err)
       })
     } else if (!this.isFilterOn) {
       this.clownService.getMachines().subscribe(response => {
         this.createCsvFile(response['data'])
+        this.isDownloadingCsv = false
       }, (err: any) => {
         this.handleError(err)
       })
     } else {
       this.clownService.searchMachines(this.searchTerm).subscribe(response => {
         this.createCsvFile(response['data'])
+        this.isDownloadingCsv = false
       }, (err: any) => {
         this.handleError(err)
       })

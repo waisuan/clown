@@ -10,6 +10,7 @@ import { sanitizeSearchTerm, sanitizeFormDataForRead, sanitizeFormDataForWrite }
 import { ActivatedRoute } from '@angular/router'
 import { Router } from '@angular/router'
 import { ButtonCellComponent } from '../button-cell/button-cell.component'
+import { NgxSpinnerService } from "ngx-spinner"
 
 @Component({
   selector: 'app-maintenance-history',
@@ -62,12 +63,15 @@ export class MaintenanceHistoryComponent implements OnInit {
   @Input() currentRecord
   @Input() attachment = {}
   @Input() machineId: string
+  isSearching = false
+  isDownloadingCsv = false
 
   constructor(
     private clownService: ClownService, 
     private modalService: NgbModal, 
     private router: Router, 
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit() {
@@ -211,22 +215,28 @@ export class MaintenanceHistoryComponent implements OnInit {
   }
 
   getHistory(params: IGetRowsParams) {
+    this.spinner.show()
     this.clownService.getHistory(this.machineId, this.cacheBlockSize, params.startRow, this.sortBy, this.sortOrder).subscribe(response => {
       var history: any = response['data']
       var totalNumOfRecords: any = response['count']
       params.successCallback(history, totalNumOfRecords)
       this.gridApi.sizeColumnsToFit()
+
+      this.spinner.hide()
     }, (err: any) => {
       this.handleError(err)
     })
   }
 
   getHistoryThroughSearch(params: IGetRowsParams) {
+    this.isSearching = true
     this.clownService.searchHistory(this.machineId, this.searchTerm, this.cacheBlockSize, params.startRow, this.sortBy, this.sortOrder).subscribe(response => {
       var history: any = response['data']
       var totalNumOfRecords: any = response['count']
       params.successCallback(history, totalNumOfRecords)
       this.gridApi.sizeColumnsToFit()
+
+      this.isSearching = false
     }, (err: any) => {
       this.handleError(err)
     })
@@ -289,15 +299,18 @@ export class MaintenanceHistoryComponent implements OnInit {
   }
 
   downloadToCsv() {
+    this.isDownloadingCsv = true
     if (!this.isFilterOn) {
       this.clownService.getHistory(this.machineId).subscribe(response => {
         this.createCsvFile(response['data'])
+        this.isDownloadingCsv = false
       }, (err: any) => {
         this.handleError(err)
       })
     } else {
       this.clownService.searchHistory(this.machineId, this.searchTerm).subscribe(response => {
         this.createCsvFile(response['data'])
+        this.isDownloadingCsv = false
       }, (err: any) => {
         this.handleError(err)
       })
