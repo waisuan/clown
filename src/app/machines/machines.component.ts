@@ -93,6 +93,10 @@ export class MachinesComponent implements OnInit {
     private spinner: NgxSpinnerService
   ) { }
 
+  isAdmin() {
+    return this.clownService.isAdmin()
+  }
+
   ngOnInit() {
     this.searchTerms.pipe(
       // wait X-ms after each keystroke before considering the term

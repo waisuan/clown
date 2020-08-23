@@ -198,8 +198,9 @@ export class ClownService {
 
   login(credentials) {
     return this.http.post(`${url}/${api}/users/login`, credentials).pipe(
-      tap(_ => {
+      tap(isAdmin => {
         localStorage.setItem('user', credentials['username'])
+        localStorage.setItem('is_admin', isAdmin as string)
       }),
       catchError(this.handleError('login()'))
     )
@@ -216,6 +217,10 @@ export class ClownService {
 
   isLoggedIn() {
     return localStorage.getItem('user')
+  }
+
+  isAdmin() {
+    return localStorage.getItem('is_admin') == "true"
   }
 
   private log(msg: any) {

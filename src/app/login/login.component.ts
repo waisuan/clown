@@ -12,6 +12,7 @@ export class LoginComponent implements OnInit {
   password: string = null
   failedLogin: boolean = false
   isLoggingIn: boolean = false
+  errorMsg: string = "Something went wrong. Try again."
 
   constructor(private clownService: ClownService, private router: Router) { }
 
@@ -29,6 +30,7 @@ export class LoginComponent implements OnInit {
       this.isLoggingIn = false
       this.router.navigate([this.clownService.redirectUrl])
     }, (err: Error) => {
+      this.errorMsg = err['error']
       this.failedLogin = true
       this.isLoggingIn = false
     })

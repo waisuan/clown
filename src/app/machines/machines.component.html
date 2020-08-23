@@ -4,7 +4,7 @@
   <div>
     <h6>
       <a href='javascript: void(0);' (click)='logout()' class="no-underline-on-hover"><i class="fas fa-sign-out-alt"></i> Logout</a>
-      | <a href="{{apiUrl}}/admin" class="no-underline-on-hover"><i class="fas fa-user-cog"></i> Admin</a>
+      <span *ngIf="isAdmin()"> | <a href="{{apiUrl}}/admin" class="no-underline-on-hover"><i class="fas fa-user-cog"></i> Admin</a></span>
     </h6>
   </div>
   <div class="clown-main-actions fixed">
