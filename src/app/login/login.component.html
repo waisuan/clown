@@ -11,6 +11,6 @@
       Sign in
     </button>
     <a href="/register" style="text-decoration: none;">Sign up</a>
-    <ngb-alert style="margin-top: 5px;" class="animated shake" type="danger" [dismissible]="false" *ngIf="failedLogin">Invalid username/password.</ngb-alert>
+    <ngb-alert style="margin-top: 5px;" class="animated shake" type="danger" [dismissible]="false" *ngIf="failedLogin">{{errorMsg}}</ngb-alert>
   </form>
 </div>

@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080',
-  machinesWebsocketUrl: 'ws://localhost:8080/clown-api/machines/websocket'
+  apiUrl: 'http://localhost:7000',
+  machinesWebsocketUrl: 'ws://localhost:7000/websocket'
 };
 
 /*
