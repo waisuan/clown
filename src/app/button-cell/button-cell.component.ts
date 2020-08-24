@@ -10,25 +10,21 @@ import * as FileSaver from 'file-saver';
   styleUrls: ['./button-cell.component.css']
 })
 export class ButtonCellComponent implements OnInit {
-  attachment: any;
-  id: any;
+  attachment_name: any;
+  attachment_id: any
   constructor(private clownService: ClownService, private http: HttpClient, private router: Router) {}
 
   agInit(params) {
     if (params['data']) {
-      if ('workOrderNumber' in params['data']) {
-        this.id = params['data']['serialNumber'] + '_' + params['data']['workOrderNumber']
-      } else if ('serialNumber' in params['data']) {
-        this.id = params['data']['serialNumber']
-      }
-      this.attachment = params['data']['attachment'];
+      this.attachment_name = params['data']['attachment_name'];
+      this.attachment_id = params['data']['attachment'];
     }
   }
 
   ngOnInit() {}
 
   downloadFile() {
-    this.clownService.getAttachment(this.id, this.attachment).subscribe(response => {
+    this.clownService.getAttachment(this.attachment_id).subscribe(response => {
       FileSaver.saveAs(response['blob'], response['fileName']);
     });
   }

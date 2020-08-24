@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core'
-import { Router } from '@angular/router'
-import { ClownService } from '../clown.service'
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { ClownService } from '../clown.service';
 
 @Component({
   selector: 'app-registration',
@@ -8,11 +8,11 @@ import { ClownService } from '../clown.service'
   styleUrls: ['./registration.component.css']
 })
 export class RegistrationComponent implements OnInit {
-  username: String = null
-  password: String = null
-  email: String = null
-  failedRegistration: boolean = false
-  isRegistering: boolean = false
+  username: String = null;
+  password: String = null;
+  email: String = null;
+  failedRegistration: boolean = false;
+  isRegistering: boolean = false;
 
   constructor(private clownService: ClownService, private router: Router) { }
 
@@ -20,19 +20,19 @@ export class RegistrationComponent implements OnInit {
   }
 
   onSubmit() {
-    this.failedRegistration = false
-    this.isRegistering = true
+    this.failedRegistration = false;
+    this.isRegistering = true;
 
-    var credentials = {}
-    credentials['username'] = this.username
-    credentials['password'] = this.password
-    credentials['email'] = this.email
+    var credentials = {};
+    credentials['username'] = this.username;
+    credentials['password'] = this.password;
+    credentials['email'] = this.email;
     this.clownService.register(credentials).subscribe(_ => {
-      this.isRegistering = false
-      this.router.navigate(['/login'])
+      this.isRegistering = false;
+      this.router.navigate(['/login']);
     }, (err: Error) => {
-      this.failedRegistration = true
-      this.isRegistering = false
+      this.failedRegistration = true;
+      this.isRegistering = false;
     })
   }
 
