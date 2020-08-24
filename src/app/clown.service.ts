@@ -1,19 +1,17 @@
-import { Injectable } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
-import { catchError, tap, map } from 'rxjs/operators'
-import { Observable, of, throwError } from 'rxjs'
-import { environment } from '../environments/environment'
-import { switchMap } from 'rxjs/operators'
-import { _ } from 'ag-grid-community'
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, tap, map } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { environment } from '../environments/environment';
 
-const api = 'api'
-const url = environment.apiUrl
+const api = 'clown-api';
+const url = environment.apiUrl;
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClownService {
-  redirectUrl = '/'
+  redirectUrl = '/';
 
   constructor(private http: HttpClient) { }
 
@@ -21,188 +19,181 @@ export class ClownService {
     return {
       responseType: 'blob' as 'blob',
       observe: 'response' as 'response'
-    }
+    };
   }
 
-  getMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
-    var endpoint = `${url}/${api}/machines`
-    var queryParams = {}
+  getMachines(limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {    
+    var endpoint = `${url}/${api}/machines`;
     if (limit != null) {
-      queryParams['page_limit'] = limit.toString()
+      endpoint += `/${limit}`;
     }
     if (lastMachineFetched != null) {
-      queryParams['page_offset'] = lastMachineFetched.toString()
+      endpoint += `/${lastMachineFetched}`;
     }
     if (sortBy != null && sortOrder != null) {
-      queryParams['sort_filter'] = sortBy
-      queryParams['sort_order'] = sortOrder
+      endpoint += `/${sortBy}/${sortOrder}`;
     }
 
-    return this.http.get(endpoint + '/count').pipe(
-      switchMap(count => {
-        return this.http.get(endpoint, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )   
+    return this.http.get(endpoint).pipe(
+      catchError(this.handleError('getMachines()'))
+    );
   }
 
-  getDueMachines() {
-    return this.http.get(`${url}/${api}/machines/due`)
+  getDueMachines(status: string, limit: number=null, lastMachineFetched: number=null, sortBy: string=null, sortOrder: string=null) {
+    var endpoint = `${url}/${api}/machines/due/${status}`;
+    if (limit != null) {
+      endpoint += `/${limit}`;
+    }
+    if (lastMachineFetched != null) {
+      endpoint += `/${lastMachineFetched}`;
+    }
+    if (sortBy != null && sortOrder != null) {
+      endpoint += `/${sortBy}/${sortOrder}`;
+    }
+    return this.http.get(endpoint).pipe(
+      catchError(this.handleError('getDueMachines()'))
+    );
   }
 
-  getAttachment(dir:string, filename: string) {
-    var endpoint = `${url}/${api}/files/${dir}/${filename}`
+  getAttachment(id: string) {
+    var endpoint = `${url}/${api}/attachment/${id}`;
     return this.http.get(endpoint, this.getHttpFileOptions()).pipe(
       map(response => {
-        return { fileName: filename, blob: response.body }
+        var contentDispositionHeader = response.headers.get('Content-Disposition');
+        var result = contentDispositionHeader.split(';')[1].trim().split('=')[1];
+        var fileName = result.replace(/"/g, '');
+        return { fileName: fileName, blob: response.body };
       }),
       catchError(this.handleError('getAttachment()'))
-    )
+    );
   }
 
   searchMachines(term: string, limit: number = null, lastMachineFetched: number = null, sortBy: string = null, sortOrder: string = null) {
     if (!term.trim()) {
       return this.getMachines(limit, lastMachineFetched, sortBy, sortOrder)
     }
-    var endpoint = `${url}/${api}/machines`
-    var queryParams = {}
+    var endpoint = `${url}/${api}/machines/search/${term}`;
     if (limit != null) {
-      queryParams['page_limit'] = limit.toString()
+      endpoint += `/${limit}`;
     }
     if (lastMachineFetched != null) {
-      queryParams['page_offset'] = lastMachineFetched.toString()
+      endpoint += `/${lastMachineFetched}`;
     }
     if (sortBy != null && sortOrder != null) {
-      queryParams['sort_filter'] = sortBy
-      queryParams['sort_order'] = sortOrder
+      endpoint += `/${sortBy}/${sortOrder}`;
     }
-
-    return this.http.get(endpoint + '/count', {params: {'keyword': term}}).pipe(
-      switchMap(count => {
-        return this.http.get(endpoint + `/search/${term}`, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )
+    return this.http.get(endpoint).pipe(
+      catchError(this.handleError('searchMachinesInBatches()'))
+    );
   }
 
   insertMachine(machine: {}) {
     return this.http.post(`${url}/${api}/machines`, machine).pipe(
-      switchMap(_ => {
-        return this.http.get(`${url}/${api}/machines/due/count`)
-      }),
       catchError(this.handleError('insertMachine()'))
-    )
+    );
   }
 
   updateMachine(id: string, machine: {}) {
     return this.http.put(`${url}/${api}/machines/${id}`, machine).pipe(
-      switchMap(_ => {
-        return this.http.get(`${url}/${api}/machines/due/count`)
-      }),
       catchError(this.handleError('updateMachine()'))
-    )
+    );
   }
 
   deleteMachine(id: string) {
     return this.http.delete(`${url}/${api}/machines/${id}`).pipe(
-      switchMap(_ => {
-        return this.http.get(`${url}/${api}/machines/due/count`)
-      }),
       catchError(this.handleError('deleteMachine()'))
-    )
+    );
   }
 
   insertAttachment(id: string, file: FormData) {
     if (!file) {
-      return of(null)
+      return of(null);
     }
-    return this.http.post(`${url}/${api}/files/${id}`, file).pipe(
+    return this.http.put(`${url}/${api}/attachment/${id}`, file).pipe(
       catchError(this.handleError('insertAttachment()'))
-    )
+    );
   }
 
   getHistory(machineId: string, limit: number=null, lastBatchFetched: number=null, sortBy: string=null, sortOrder: string=null) {
-    var endpoint = `${url}/${api}/machines/${machineId}/history`
-    var queryParams = {}
+    var endpoint = `${url}/${api}/history/fetch/${machineId}`;
     if (limit != null) {
-      queryParams['page_limit'] = limit.toString()
+      endpoint += `/${limit}`;
     }
     if (lastBatchFetched != null) {
-      queryParams['page_offset'] = lastBatchFetched.toString()
+      endpoint += `/${lastBatchFetched}`;
     }
     if (sortBy != null && sortOrder != null) {
-      queryParams['sort_filter'] = sortBy
-      queryParams['sort_order'] = sortOrder
+      endpoint += `/${sortBy}/${sortOrder}`;
     }
-
-    return this.http.get(endpoint + '/count').pipe(
-      switchMap(count => {
-        return this.http.get(endpoint, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )
+    return this.http.get(endpoint).pipe(
+      catchError(this.handleError('getHistory()'))
+    );
   }
 
-  searchHistory(machineId: string, term: string, limit: number = null, lastBatchFetched: number = null, sortBy: string = null, sortOrder: string = null) {
+  searchHistory(machineId: string, term: string, limit: number = null, lastMachineFetched: number = null, sortBy: string = null, sortOrder: string = null) {
     if (!term.trim()) {
-      return this.getHistory(machineId, limit, lastBatchFetched, sortBy, sortOrder)
+      return this.getHistory(machineId, limit, lastMachineFetched, sortBy, sortOrder)
     }
-    var endpoint = `${url}/${api}/machines/${machineId}/history`
-    var queryParams = {}
+    var endpoint = `${url}/${api}/history/search/${machineId}/${term}`;
     if (limit != null) {
-      queryParams['page_limit'] = limit.toString()
+      endpoint += `/${limit}`;
     }
-    if (lastBatchFetched != null) {
-      queryParams['page_offset'] = lastBatchFetched.toString()
+    if (lastMachineFetched != null) {
+      endpoint += `/${lastMachineFetched}`;
     }
     if (sortBy != null && sortOrder != null) {
-      queryParams['sort_filter'] = sortBy
-      queryParams['sort_order'] = sortOrder
+      endpoint += `/${sortBy}/${sortOrder}`;
     }
-
-    return this.http.get(endpoint + '/count', {params: {'keyword': term}}).pipe(
-      switchMap(count => {
-        return this.http.get(endpoint + `/search/${term}`, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )
+    return this.http.get(endpoint).pipe(
+      catchError(this.handleError('searchHistory()'))
+    );
   }
 
-  insertHistory(machineId: String, history: {}) {
-    return this.http.post(`${url}/${api}/machines/${machineId}/history`, history).pipe(
+  insertHistory(history: {}) {
+    return this.http.post(`${url}/${api}/history`, history).pipe(
       catchError(this.handleError('insertHistory()'))
-    )
+    );
   }
 
-  updateHistory(machineId: String, id: string, newValues: {}) {
-    return this.http.put(`${url}/${api}/machines/${machineId}/history/${id}`, newValues).pipe(
+  updateHistory(id: string, newValues: {}) {
+    return this.http.put(`${url}/${api}/history/${id}`, newValues).pipe(
       catchError(this.handleError('updateHistory()'))
-    )
+    );
   }
 
-  deleteHistory(machineId: String, id: string) {
-    return this.http.delete(`${url}/${api}/machines/${machineId}/history/${id}`).pipe(
+  deleteHistory(id: string) {
+    return this.http.delete(`${url}/${api}/history/${id}`).pipe(
       catchError(this.handleError('deleteHistory()'))
-    )
+    );
   }
 
   register(credentials) {
-    return this.http.post(`${url}/${api}/users/register`, credentials).pipe(
-      catchError(this.handleError('register()'))
-    )
+    return this.http.post(`${url}/${api}/user/create`, credentials).pipe(
+      catchError(this.handleError('login()'))
+    );
   }
 
   login(credentials) {
-    return this.http.post(`${url}/${api}/users/login`, credentials).pipe(
-      tap(isAdmin => {
-        localStorage.setItem('user', credentials['username'])
-        localStorage.setItem('is_admin', isAdmin as string)
+    return this.http.post(`${url}/${api}/user/login`, credentials).pipe(
+      tap(response => {
+        localStorage.setItem('authToken', response['token']);
+        localStorage.setItem('user', credentials['username']);
       }),
       catchError(this.handleError('login()'))
+    );
+  }
+
+  extendUserSession() {
+    var currentUser = localStorage.getItem('user');
+    return this.http.post(`${url}/${api}/user/extend/${currentUser}`, {}).pipe(
+      tap(response => {
+        if ('token' in response) {
+          localStorage.setItem('authToken', response['token']);
+        } else {
+          this.logout();
+        }
+      }),
+      catchError(this.handleError('extendUserSession()'))
     )
   }
 
@@ -220,15 +211,11 @@ export class ClownService {
   }
 
   isLoggedIn() {
-    return localStorage.getItem('user')
-  }
-
-  isAdmin() {
-    return localStorage.getItem('is_admin') == "true"
+    return localStorage.getItem('authToken') && localStorage.getItem('user');
   }
 
   private log(msg: any) {
-    console.log(msg)
+    console.log(msg);
   }
 
   /**
@@ -239,13 +226,13 @@ export class ClownService {
    */
   private handleError<T>(operation = 'operation') {
     return (error: any): Observable<T> => {
-      console.error(error)
+      console.error(error);
 
-      this.log(`${operation} failed: ${error.message}`)
+      this.log(`${operation} failed: ${error.message}`);
 
       // Let the app keep running by returning an empty result.
-      //return of(result as T)
-      return throwError(error)
-    }
+      //return of(result as T);
+      return throwError(error);
+    };
   }
 }
