@@ -346,8 +346,11 @@ export class MaintenanceHistoryComponent implements OnInit {
   }
 
   logout() {
-    this.clownService.logout()
-    this.router.navigate(['/login'])
+    this.spinner.show()
+    this.clownService.logout().subscribe(_ => {
+      this.spinner.hide()
+      this.router.navigate(['/login'])
+    })
   }
 
   handleError(err: any) {
