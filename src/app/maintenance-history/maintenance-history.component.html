@@ -1,5 +1,3 @@
-<ngx-spinner type="ball-spin-fade"></ngx-spinner>
-
 <div class="clown-main">
   <div>
     <h6><a href="/" class="no-underline-on-hover"><i class="fas fa-arrow-left"></i> Back</a> / <font color="SlateGray">{{ machineId }}</font> / History</h6>
@@ -7,15 +5,11 @@
   <div class="clown-main-actions">
     <div class="input-group col-4">
         <div class="input-group-prepend">
-          <span class="input-group-text" *ngIf="!isSearching"><i class="fas fa-search"></i></span>
-          <span class="input-group-text" *ngIf="isSearching"><i class="fas fa-spinner fa-pulse"></i></span>
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
         </div>
         <input #searchHistoryBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchHistory(searchHistoryBox.value)">
         <button type="button" class="btn btn-success" ngbTooltip="+ New Record" (click)="insertHistoryModal()"><i class="fas fa-plus"></i></button>
-        <button type="button" class="btn btn-dark" ngbTooltip="Download to CSV" (click)="downloadToCsv()">
-          <i class="fas fa-file-excel" *ngIf="!this.isDownloadingCsv"></i>
-          <i class="fas fa-spinner fa-pulse" *ngIf="this.isDownloadingCsv"></i>
-        </button>
+        <button type="button" class="btn btn-dark" ngbTooltip="Download to CSV" (click)="downloadToCsv()"><i class="fas fa-file-excel"></i></button>
     </div>
   </div>
 
@@ -79,12 +73,12 @@
       </div>
       <div class="form-group">
         <input hidden type="file" #uploader (change)="uploadFile($event)"/>
-        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentRecord.attachment" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
+        <button type="button" class="btn btn-outline-secondary mr-1" *ngIf="!currentRecord.attachment_name" (click)="uploader.click()" placement="bottom" ngbTooltip="Upload file">
           <i class="fas fa-file-upload"></i> {{attachment.filename || "Upload a file..."}}
         </button>
-        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentRecord.attachment">
+        <div ngbDropdown class="d-inline-block" *ngIf="!isInsert && currentRecord.attachment_name">
           <button type="button" class="btn btn-outline-secondary mr-1" id="fileDropdown" ngbDropdownToggle>
-            {{currentRecord.attachment}}
+            {{currentRecord.attachment_name}}
           </button>
           <div ngbDropdownMenu aria-labelledby="fileDropdown">
             <button type="button" (click)="downloadFile()" ngbDropdownItem><i class="fas fa-file-download"></i> Download</button>
@@ -97,10 +91,10 @@
     <div class="modal-footer">
       <div class="mr-auto" *ngIf="!isInsert">
         <div class="row" class="ml-auto">
-          <small>Created on: {{currentRecord.createdAt}}</small>
+          <small>Created on: {{currentRecord.dateOfCreation}}</small>
         </div>
         <div class="row" class="ml-auto">
-          <small style="color: blue">Updated on: {{currentRecord.updatedAt}}</small>
+          <small style="color: blue">Updated on: {{currentRecord.lastUpdated}}</small>
         </div>    
       </div>
       <small *ngIf="hasError" style="color: red">Oops! Something went wrong. Please refresh this page and try again.</small>

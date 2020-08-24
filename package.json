@@ -41,8 +41,7 @@
     "tar": "^4.4.8",
     "tslib": "^1.9.0",
     "typescript": "~3.2.2",
-    "zone.js": "~0.8.26",
-    "node-gyp": "~7.0.0"
+    "zone.js": "~0.8.26"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.13.0",
