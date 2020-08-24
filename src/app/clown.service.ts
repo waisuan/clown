@@ -211,7 +211,11 @@ export class ClownService {
       tap(_ => {
         localStorage.removeItem('user')
       }),
-      catchError(this.handleError('login()'))
+      catchError((error: any): Observable<any> => {
+        console.error(error)
+        localStorage.removeItem('user')
+        return of(null)
+      })
     )
   }
 
