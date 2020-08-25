@@ -16,5 +16,5 @@ export class Interceptor implements HttpInterceptor {
 
   private tag(request: HttpRequest<any>) {
     return request.clone({ withCredentials: true })
-}
+  }
 }
