@@ -198,9 +198,10 @@ export class ClownService {
 
   login(credentials) {
     return this.http.post(`${url}/${api}/users/login`, credentials).pipe(
-      tap(isAdmin => {
-        localStorage.setItem('user', credentials['username'])
-        localStorage.setItem('is_admin', isAdmin as string)
+      tap(user => {
+        localStorage.setItem('user', user['username'])
+        localStorage.setItem('user_role', user['role'])
+        localStorage.setItem('user_token', user['token'])
       }),
       catchError(this.handleError('login()'))
     )
@@ -210,21 +211,25 @@ export class ClownService {
     return this.http.post(`${url}/${api}/users/logout`, {}).pipe(
       tap(_ => {
         localStorage.removeItem('user')
+        localStorage.removeItem('user_role')
+        localStorage.removeItem('user_token')
       }),
       catchError((error: any): Observable<any> => {
         console.error(error)
         localStorage.removeItem('user')
+        localStorage.removeItem('user_role')
+        localStorage.removeItem('user_token')
         return of(null)
       })
     )
   }
 
   isLoggedIn() {
-    return localStorage.getItem('user')
+    return localStorage.getItem('user_token')
   }
 
   isAdmin() {
-    return localStorage.getItem('is_admin') == "true"
+    return localStorage.getItem('user_role') == 'ADMIN'
   }
 
   private log(msg: any) {

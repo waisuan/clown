@@ -15,6 +15,9 @@ export class Interceptor implements HttpInterceptor {
   }
 
   private tag(request: HttpRequest<any>) {
-    return request.clone({ withCredentials: true })
+    return request.clone({ 
+      withCredentials: true,
+      setHeaders: {'Authorization': 'Bearer ' + localStorage.getItem('user_token') + ':' + localStorage.getItem('user')}
+    })
   }
 }
