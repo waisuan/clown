@@ -38,13 +38,9 @@ export class ClownService {
       queryParams['sort_order'] = sortOrder
     }
 
-    return this.http.get(endpoint + '/count').pipe(
-      switchMap(count => {
-        return this.http.get(endpoint, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )   
+    return this.http.get(endpoint, {params: queryParams}).pipe(map(data => {
+      return {'count': data['count'], 'data': data['machines']}
+    }))
   }
 
   getDueMachines() {
@@ -78,13 +74,9 @@ export class ClownService {
       queryParams['sort_order'] = sortOrder
     }
 
-    return this.http.get(endpoint + '/count', {params: {'keyword': term}}).pipe(
-      switchMap(count => {
-        return this.http.get(endpoint + `/search/${term}`, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )
+    return this.http.get(endpoint + `/search/${term}`, {params: queryParams}).pipe(map(data => {
+      return {'count': data['count'], 'data': data['machines']}
+    }))
   }
 
   insertMachine(machine: {}) {
@@ -210,15 +202,11 @@ export class ClownService {
   logout() {
     return this.http.post(`${url}/${api}/users/logout`, {}).pipe(
       tap(_ => {
-        localStorage.removeItem('user')
-        localStorage.removeItem('user_role')
-        localStorage.removeItem('user_token')
+        localStorage.clear()
       }),
       catchError((error: any): Observable<any> => {
         console.error(error)
-        localStorage.removeItem('user')
-        localStorage.removeItem('user_role')
-        localStorage.removeItem('user_token')
+        localStorage.clear()
         return of(null)
       })
     )
@@ -236,20 +224,12 @@ export class ClownService {
     console.log(msg)
   }
 
-  /**
-   * Handle Http operation that failed.
-   * Let the app continue.
-   * @param operation - name of the operation that failed
-   * @param result - optional value to return as the observable result
-   */
   private handleError<T>(operation = 'operation') {
     return (error: any): Observable<T> => {
       console.error(error)
 
       this.log(`${operation} failed: ${error.message}`)
 
-      // Let the app keep running by returning an empty result.
-      //return of(result as T)
       return throwError(error)
     }
   }
