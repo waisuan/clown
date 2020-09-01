@@ -129,13 +129,9 @@ export class ClownService {
       queryParams['sort_order'] = sortOrder
     }
 
-    return this.http.get(endpoint + '/count').pipe(
-      switchMap(count => {
-        return this.http.get(endpoint, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )
+    return this.http.get(endpoint, {params: queryParams}).pipe(map(data => {
+      return {'count': data['count'], 'data': data['history']}
+    }))
   }
 
   searchHistory(machineId: string, term: string, limit: number = null, lastBatchFetched: number = null, sortBy: string = null, sortOrder: string = null) {
@@ -155,13 +151,9 @@ export class ClownService {
       queryParams['sort_order'] = sortOrder
     }
 
-    return this.http.get(endpoint + '/count', {params: {'keyword': term}}).pipe(
-      switchMap(count => {
-        return this.http.get(endpoint + `/search/${term}`, {params: queryParams}).pipe(map(data => {
-          return {'count': count, 'data': data}
-        }))
-      })
-    )
+    return this.http.get(endpoint + `/search/${term}`, {params: queryParams}).pipe(map(data => {
+      return {'count': data['count'], 'data': data['history']}
+    }))
   }
 
   insertHistory(machineId: String, history: {}) {
