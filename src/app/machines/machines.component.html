@@ -8,12 +8,12 @@
     </h6>
   </div>
   <div class="clown-main-actions fixed">
-    <div class="input-group col-4">
+    <div class="input-group col-5">
         <div class="input-group-prepend">
           <span class="input-group-text" *ngIf="!isSearching"><i class="fas fa-search"></i></span>
           <span class="input-group-text" *ngIf="isSearching"><i class="fas fa-spinner fa-pulse"></i></span>
         </div>
-        <input #searchMachinesBox class="form-control" type="text" placeholder="What are you looking for?" (input)="searchMachines(searchMachinesBox.value)">
+        <input #searchMachinesBox class="form-control" type="text" placeholder="What are you looking for? (3 characters minimum)" (input)="searchMachines(searchMachinesBox.value)">
         <button type="button" class="btn btn-warning" ngbTooltip="You have {{dueMachinesCount}} machines due" *ngIf="dueMachinesCount == 0">
           <span><i class="fas fa-bell-slash"></i></span>
         </button>

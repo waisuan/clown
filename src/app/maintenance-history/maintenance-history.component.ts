@@ -77,7 +77,7 @@ export class MaintenanceHistoryComponent implements OnInit {
   ngOnInit() {
     this.searchTerms.pipe(
       // wait X-ms after each keystroke before considering the term
-      debounceTime(300),
+      debounceTime(400),
       // ignore new term if same as previous term
       distinctUntilChanged(),
       // switch to new search observable each time the term changes
@@ -136,6 +136,9 @@ export class MaintenanceHistoryComponent implements OnInit {
   }
 
   searchHistory(term: string) {
+    if (term.length > 0 && term.length < 3) {
+      return
+    }
     this.searchTerms.next(term)
   }
 
