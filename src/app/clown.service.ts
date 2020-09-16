@@ -47,6 +47,10 @@ export class ClownService {
     return this.http.get(`${url}/${api}/machines/due`)
   }
 
+  getDueMachinesCount() {
+    return this.http.get(`${url}/${api}/machines/due/count`)
+  }
+
   getAttachment(dir:string, filename: string) {
     var endpoint = `${url}/${api}/files/${dir}/${filename}`
     return this.http.get(endpoint, this.getHttpFileOptions()).pipe(

@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild, Input } from '@angular/core'
+import { Component, OnInit, ViewChild, Input, OnDestroy } from '@angular/core'
 import { ClownService } from '../clown.service'
 import { AgGridNg2 } from 'ag-grid-angular'
 import { IDatasource, IGetRowsParams } from 'ag-grid-community'
-import { Subject, of } from 'rxjs'
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators'
+import { Subject, of, timer, Observable } from 'rxjs'
+import { debounceTime, distinctUntilChanged, switchMap, retry, share, takeUntil } from 'rxjs/operators'
 import { NgbModal, ModalDismissReasons, NgbDateParserFormatter, NgbModalRef } from '@ng-bootstrap/ng-bootstrap'
 import * as FileSaver from 'file-saver'
 import { NgbDateCustomParserFormatter } from '../util/NgbDateCustomParserFormatter'
@@ -24,7 +24,7 @@ import { param } from 'jquery'
     { provide: NgbDateParserFormatter, useClass: NgbDateCustomParserFormatter }
   ]
 })
-export class MachinesComponent implements OnInit {
+export class MachinesComponent implements OnInit, OnDestroy {
   rowData = []
   columnDefs = [
     { headerName: 'Serial No.', field: 'serialNumber' },
@@ -58,7 +58,6 @@ export class MachinesComponent implements OnInit {
   private gridApi
   private columnApi
 
-  private ws
   private sortBy = null
   private sortOrder = null
   private isFilterOn = false
@@ -75,13 +74,14 @@ export class MachinesComponent implements OnInit {
   private showDueMachinesOnly = false
   private showDueMachineOptions = { 'almost_due': 0, 'due': 0, 'overdue': 0 }
   private showDueMachineStatus
+  private stopPolling = new Subject();
 
   @ViewChild('agGrid') agGrid: AgGridNg2
   @ViewChild('machineModal') private machineModal
   @Input() currentMachine
   @Input() attachment = {}
-  @Input() dueMachinesCount = 0
   @Input() selectedMachine
+  dueMachinesCount = 0
   isSearching = false
   isDownloadingCsv = false
   apiUrl = environment.apiUrl
@@ -116,13 +116,19 @@ export class MachinesComponent implements OnInit {
         this.gridApi.setSortModel(null)
       })
 
-    this.ws = new WebSocket(environment.machinesWebsocketUrl)
-    this.ws.onmessage = (received) => {
-      console.log(received)
-      if (received.data) {
-        this.dueMachinesCount = JSON.parse(received.data)
-      }
-    }
+      // Poll every 30 min
+      timer(1, 1.8e+6).pipe(
+        switchMap(() => this.clownService.getDueMachinesCount()),
+        retry(),
+        share(),
+        takeUntil(this.stopPolling)
+      ).subscribe(count => {
+        this.dueMachinesCount = count as number
+      })
+  }
+
+  ngOnDestroy() {
+    this.stopPolling.next()
   }
 
   onGridReady(params) {
@@ -373,7 +379,6 @@ export class MachinesComponent implements OnInit {
 
   logout() {
     this.spinner.show()
-    this.ws.close()
     this.clownService.logout().subscribe(_ => {
       this.spinner.hide()
       this.router.navigate(['/login'])
