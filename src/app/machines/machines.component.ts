@@ -85,6 +85,7 @@ export class MachinesComponent implements OnInit, OnDestroy {
   isSearching = false
   isDownloadingCsv = false
   apiUrl = environment.apiUrl
+  cachedForDelete = {}
 
   constructor(
     private clownService: ClownService, 
@@ -155,6 +156,7 @@ export class MachinesComponent implements OnInit, OnDestroy {
     this.currentMachine = {}
     this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting })
     this.modalReference.result.then((result) => {
+      this.clearModalState()
       this.miniRefresh = true
       this.gridApi.setSortModel(this.gridApi.getSortModel())
     }, (reason) => {
@@ -175,6 +177,7 @@ export class MachinesComponent implements OnInit, OnDestroy {
     this.currentMachine = sanitizeFormDataForRead(params['data'])
     this.modalReference = this.modalService.open(this.machineModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting })
     this.modalReference.result.then((result) => {
+      this.clearModalState()
       this.miniRefresh = true
       this.gridApi.setSortModel(this.gridApi.getSortModel())
     }, (reason) => {
@@ -208,11 +211,12 @@ export class MachinesComponent implements OnInit, OnDestroy {
   }
 
   removeFile() {
+    this.cachedForDelete['attachment'] = this.currentMachine['attachment']
     this.currentMachine['attachment'] = null
   }
 
   uploadFile(event) {
-    this.removeFile()
+    this.currentMachine['attachment'] = null
     var fileList: FileList = event.target.files
     if (fileList.length > 0) {
       var file:File = fileList[0]
@@ -256,6 +260,7 @@ export class MachinesComponent implements OnInit, OnDestroy {
     this.isDeleting = false
     this.isSaving = false
     this.attachment = {}
+    this.cachedForDelete = {}
   }
 
   getMachines(params: IGetRowsParams) {
@@ -321,7 +326,8 @@ export class MachinesComponent implements OnInit, OnDestroy {
   insertOrUpdateMachine(id: string, machine: {}, attachment: {}) {
     this.isSaving = true
     this.hasError = false
-    this.clownService.insertAttachment(id, attachment['file']).subscribe(_ => {
+    let attachmentHandler = this.cachedForDelete['attachment'] ? this.clownService.deleteAttachment(id, this.cachedForDelete['attachment']) : this.clownService.insertAttachment(id, attachment['file'])
+    attachmentHandler.subscribe(_ => {
       if (attachment['filename']) {
         machine['attachment'] = attachment['filename']
       }

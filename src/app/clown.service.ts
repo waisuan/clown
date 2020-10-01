@@ -119,6 +119,12 @@ export class ClownService {
     )
   }
 
+  deleteAttachment(id: string, fileName: String) {
+    return this.http.delete(`${url}/${api}/files/${id}/${fileName}`).pipe(
+      catchError(this.handleError('deleteAttachment()'))
+    )
+  }
+
   getHistory(machineId: string, limit: number=null, lastBatchFetched: number=null, sortBy: string=null, sortOrder: string=null) {
     var endpoint = `${url}/${api}/machines/${machineId}/history`
     var queryParams = {}
