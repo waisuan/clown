@@ -65,6 +65,7 @@ export class MaintenanceHistoryComponent implements OnInit {
   @Input() machineId: string
   isSearching = false
   isDownloadingCsv = false
+  cachedForDelete = {}
 
   constructor(
     private clownService: ClownService, 
@@ -120,6 +121,7 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.currentRecord = sanitizeFormDataForRead(params['data'])
     this.modalReference = this.modalService.open(this.rowModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting })
     this.modalReference.result.then((result) => {
+      this.clearModalState()
       this.miniRefresh = true
       this.gridApi.setSortModel(this.gridApi.getSortModel())
     }, (reason) => {
@@ -132,7 +134,7 @@ export class MaintenanceHistoryComponent implements OnInit {
   }
 
   onDelete() {
-    this.deleteHistory(this.currentRecord['workOrderNumber'])
+    this.deleteHistory(this.currentRecord['workOrderNumber'], this.currentRecord['attachment'])
   }
 
   searchHistory(term: string) {
@@ -147,6 +149,7 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.currentRecord = { 'serialNumber': this.machineId }
     this.modalReference = this.modalService.open(this.rowModal, { windowClass: "xl", beforeDismiss: () => !this.isSaving && !this.isDeleting })
     this.modalReference.result.then((result) => {
+      this.clearModalState()
       this.miniRefresh = true
       this.gridApi.setSortModel(this.gridApi.getSortModel())
     }, (reason) => {
@@ -159,6 +162,7 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.isDeleting = false
     this.isSaving = false
     this.attachment = {}
+    this.cachedForDelete = {}
   }
 
   refreshSortModel(sortModel) {
@@ -191,12 +195,17 @@ export class MaintenanceHistoryComponent implements OnInit {
     this.getAttachment(this.machineId + '_' + this.currentRecord['workOrderNumber'], this.currentRecord['attachment'])
   }
 
-  removeFile() {
-    this.currentRecord['attachment'] = ""
+  removeFile(fresh: boolean = false) {
+    if (fresh) {
+      this.cachedForDelete['attachment'] = null
+    } else {
+      this.cachedForDelete['attachment'] = this.currentRecord['attachment']
+    }
+    this.currentRecord['attachment'] = null
   }
 
   uploadFile(event) {
-    this.removeFile()
+    this.removeFile(true)
     var fileList: FileList = event.target.files
     if (fileList.length > 0) {
       var file:File = fileList[0]
@@ -248,7 +257,10 @@ export class MaintenanceHistoryComponent implements OnInit {
   insertOrUpdateHistory(workOrderNumber: string, values: {}, attachment: {}) {
     this.isSaving = true
     this.hasError = false
-    this.clownService.insertAttachment(this.machineId + '_' + workOrderNumber, attachment['file']).subscribe(_ => {
+    let recordKey = this.machineId + '_' + workOrderNumber
+    let attachmentHandler = this.cachedForDelete['attachment'] ? this.clownService.deleteAttachment(recordKey, this.cachedForDelete['attachment']) : this.clownService.insertAttachment(recordKey, attachment['file'])
+
+    attachmentHandler.subscribe(_ => {
       if (attachment['filename']) {
         values['attachment'] = attachment['filename']
       }
@@ -260,6 +272,7 @@ export class MaintenanceHistoryComponent implements OnInit {
     }, (err: Error) => {
       this.isSaving = false
       this.hasError = true
+      this.handleError(err)
     })
   }
 
@@ -287,13 +300,21 @@ export class MaintenanceHistoryComponent implements OnInit {
     })
   }
 
-  deleteHistory(workOrderNumber: string) {
+  deleteHistory(workOrderNumber: string, currentHistoryAttachment: string) {
     this.isDeleting = true
     this.hasError = false
-    this.clownService.deleteHistory(this.machineId, workOrderNumber).subscribe(() => {
-      this.isDeleting = false
-      this.modalReference.close()
-      this.attachment = {} 
+    let attachmentHandler = currentHistoryAttachment ? this.clownService.deleteAttachment(this.machineId + '_' + workOrderNumber, currentHistoryAttachment) : of(null)
+
+    attachmentHandler.subscribe(_ => {
+      this.clownService.deleteHistory(this.machineId, workOrderNumber).subscribe(() => {
+        this.isDeleting = false
+        this.modalReference.close()
+        this.attachment = {} 
+      }, (err: Error) => {
+        this.isDeleting = false
+        this.hasError = true
+        this.handleError(err)
+      })
     }, (err: Error) => {
       this.isDeleting = false
       this.hasError = true

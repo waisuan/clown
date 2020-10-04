@@ -190,7 +190,7 @@ export class MachinesComponent implements OnInit, OnDestroy {
   }
 
   onDelete() {
-    this.deleteMachine(this.currentMachine['serialNumber'])
+    this.deleteMachine(this.currentMachine['serialNumber'], this.currentMachine['attachment'])
   }
 
   onShowDueMachines(status) {
@@ -210,13 +210,17 @@ export class MachinesComponent implements OnInit, OnDestroy {
     this.getAttachment(this.currentMachine['serialNumber'], this.currentMachine['attachment'])
   }
 
-  removeFile() {
-    this.cachedForDelete['attachment'] = this.currentMachine['attachment']
+  removeFile(fresh: boolean = false) {
+    if (fresh) {
+      this.cachedForDelete['attachment'] = null
+    } else {
+      this.cachedForDelete['attachment'] = this.currentMachine['attachment']
+    }
     this.currentMachine['attachment'] = null
   }
 
   uploadFile(event) {
-    this.currentMachine['attachment'] = null
+    this.removeFile(true)
     var fileList: FileList = event.target.files
     if (fileList.length > 0) {
       var file:File = fileList[0]
@@ -327,6 +331,7 @@ export class MachinesComponent implements OnInit, OnDestroy {
     this.isSaving = true
     this.hasError = false
     let attachmentHandler = this.cachedForDelete['attachment'] ? this.clownService.deleteAttachment(id, this.cachedForDelete['attachment']) : this.clownService.insertAttachment(id, attachment['file'])
+    
     attachmentHandler.subscribe(_ => {
       if (attachment['filename']) {
         machine['attachment'] = attachment['filename']
@@ -339,6 +344,7 @@ export class MachinesComponent implements OnInit, OnDestroy {
     }, (err: Error) => {
       this.isSaving = false
       this.hasError = true
+      this.handleError(err)
     })
   }
 
@@ -368,14 +374,22 @@ export class MachinesComponent implements OnInit, OnDestroy {
     })
   }
 
-  deleteMachine(id: string) {
+  deleteMachine(id: string, currentMachineAttachment: string) {
     this.isDeleting = true
     this.hasError = false
-    this.clownService.deleteMachine(id).subscribe(dueCount => {
-      this.dueMachinesCount = dueCount as number
-      this.isDeleting = false
-      this.modalReference.close()
-      this.attachment = {} 
+    let attachmentHandler = currentMachineAttachment ? this.clownService.deleteAttachment(id, currentMachineAttachment) : of(null)
+
+    attachmentHandler.subscribe(_ => {
+      this.clownService.deleteMachine(id).subscribe(dueCount => {
+        this.dueMachinesCount = dueCount as number
+        this.isDeleting = false
+        this.modalReference.close()
+        this.attachment = {} 
+      }, (err: Error) => {
+        this.isDeleting = false
+        this.hasError = true
+        this.handleError(err)
+      })
     }, (err: Error) => {
       this.isDeleting = false
       this.hasError = true
